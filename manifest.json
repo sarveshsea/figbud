@@ -1,0 +1,35 @@
+{
+  "name": "FigBud",
+  "id": "figbud-ai-assistant-2025",
+  "api": "1.0.0",
+  "main": "dist/code.js",
+  "ui": "dist/ui.html",
+  "editorType": ["figma", "figjam"],
+  "containsWidget": true,
+  "permissions": [
+    "currentuser",
+    "activeusers"
+  ],
+  "parameters": [
+    {
+      "name": "Feature",
+      "key": "feature",
+      "allowFreeform": true
+    }
+  ],
+  "parameterOnly": false,
+  "capabilities": [],
+  "enableProposedApi": false,
+  "enablePrivatePluginApi": false,
+  "build": "",
+  "documentAccess": "dynamic-page",
+  "networkAccess": {
+    "allowedDomains": [
+      "https://api.openai.com",
+      "https://www.googleapis.com",
+      "https://api.assemblyai.com",
+      "https://your-backend-domain.com"
+    ],
+    "reasoning": "FigBud requires network access to fetch AI-powered tutorial recommendations from OpenAI API, search YouTube tutorials via Google API, extract timestamps via AssemblyAI, and communicate with the backend for user authentication and data storage."
+  }
+}

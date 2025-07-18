@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "strictNullChecks": false,
+    "noImplicitAny": false,
+    "types": ["jest", "node"]
+  },
+  "include": [
+    "tests/**/*",
+    "src/**/*",
+    "server/**/*"
+  ]
+}
