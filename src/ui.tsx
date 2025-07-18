@@ -56,7 +56,7 @@ const App: React.FC = () => {
     checkAuth();
 
     // Listen for messages from Figma widget
-    window.onmessage = (event) => {
+    const handleMessage = (event: MessageEvent) => {
       const { type, payload } = event.data.pluginMessage || {};
       
       switch (type) {
@@ -80,10 +80,18 @@ const App: React.FC = () => {
       }
     };
 
+    // Add event listener
+    window.addEventListener('message', handleMessage);
+
     // Request initial context from Figma
     parent.postMessage({
       pluginMessage: { type: 'get-context' }
     }, '*');
+
+    // Cleanup function
+    return () => {
+      window.removeEventListener('message', handleMessage);
+    };
 
   }, []);
 

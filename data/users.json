@@ -1,1 +1,44 @@
-[]
+[
+  {
+    "id": "c6d726bb-1da3-4f5f-9c5f-83d5d96bab8d",
+    "email": "test@figbud.com",
+    "password": "$2b$12$AI5nzWB1.U./fGYLTuwn1.Bh.cNPTy/cFANcxJfzpWTf/jDNNLUnq",
+    "createdAt": "2025-07-18T02:15:44.220Z",
+    "updatedAt": "2025-07-18T02:15:44.220Z",
+    "isEmailVerified": false,
+    "emailVerificationToken": "066628874bb071d361e553108fed4bd9c131a60921f1ea88cbe7d67e6b558dcb",
+    "subscription": {
+      "tier": "free",
+      "cancelAtPeriodEnd": false,
+      "status": "active"
+    },
+    "preferences": {
+      "skillLevel": "beginner",
+      "designStyle": "modern",
+      "commonUseCases": [],
+      "preferredTutorialLength": "any",
+      "notifications": {
+        "email": true,
+        "inApp": true,
+        "weekly": true
+      },
+      "theme": "auto"
+    },
+    "analytics": {
+      "totalQueries": 0,
+      "tutorialsViewed": 0,
+      "demosCreated": 0,
+      "lastActiveAt": "2025-07-18T02:15:44.220Z",
+      "featureUsage": {
+        "tutorialSearch": 0,
+        "demoCreation": 0,
+        "guidance": 0,
+        "collaboration": 0
+      },
+      "learningProgress": {
+        "completedTutorials": [],
+        "badgesEarned": []
+      }
+    }
+  }
+]

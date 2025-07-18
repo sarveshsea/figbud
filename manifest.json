@@ -1,7 +1,8 @@
 {
   "name": "FigBud",
-  "id": "figbud-ai-assistant-2025",
+  "id": "figbud-ai-assistant-2025-v2",
   "api": "1.0.0",
+  "widgetApi": "1.0.0",
   "main": "dist/code.js",
   "ui": "dist/ui.html",
   "editorType": ["figma", "figjam"],
@@ -10,14 +11,6 @@
     "currentuser",
     "activeusers"
   ],
-  "parameters": [
-    {
-      "name": "Feature",
-      "key": "feature",
-      "allowFreeform": true
-    }
-  ],
-  "parameterOnly": false,
   "capabilities": [],
   "enableProposedApi": false,
   "enablePrivatePluginApi": false,

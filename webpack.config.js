@@ -9,7 +9,7 @@ module.exports = (env, argv) => {
     devtool: isProduction ? 'source-map' : 'eval-source-map',
     
     entry: {
-      code: './src/code.tsx',
+      code: './src/code.js',
       ui: './src/ui.tsx'
     },
     

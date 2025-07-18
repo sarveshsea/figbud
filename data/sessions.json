@@ -1,1 +1,13 @@
-[]
+[
+  {
+    "id": "60a53b6a-7966-4c07-ae75-befec2927455",
+    "userId": "c6d726bb-1da3-4f5f-9c5f-83d5d96bab8d",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjNmQ3MjZiYi0xZGEzLTRmNWYtOWM1Zi04M2Q1ZDk2YmFiOGQiLCJlbWFpbCI6InRlc3RAZmlnYnVkLmNvbSIsInR5cGUiOiJhY2Nlc3MiLCJpYXQiOjE3NTI4MDQ5NDQsImV4cCI6MTc1MjgwODU0NH0.2JMA3SmxJsuTc_hnJlP1WdAKA6vf2XIkLzK5bYMW_oM",
+    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjNmQ3MjZiYi0xZGEzLTRmNWYtOWM1Zi04M2Q1ZDk2YmFiOGQiLCJlbWFpbCI6InRlc3RAZmlnYnVkLmNvbSIsInR5cGUiOiJyZWZyZXNoIiwiaWF0IjoxNzUyODA0OTQ0LCJleHAiOjE3NTM0MDk3NDR9.0zH9ZImzUxuJ0b9HGeTvVTnOn3b6vjOfLkPThpCpWkw",
+    "expiresAt": "2025-07-18T03:15:44.000Z",
+    "createdAt": "2025-07-18T02:15:44.224Z",
+    "lastAccessedAt": "2025-07-18T02:15:44.224Z",
+    "userAgent": "curl/8.7.1",
+    "ipAddress": "::1"
+  }
+]

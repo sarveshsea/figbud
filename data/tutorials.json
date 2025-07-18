@@ -1,1 +1,24 @@
-[]
+[
+  {
+    "id": "2",
+    "videoId": "dQw4w9WgXcQ",
+    "title": "Advanced figma button Techniques in Figma",
+    "description": "Master advanced figma button techniques with these pro tips.",
+    "thumbnailUrl": "https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg",
+    "duration": 1200,
+    "channelTitle": "Design Pro",
+    "url": "https://youtube.com/watch?v=dQw4w9WgXcQ",
+    "skillLevel": "advanced",
+    "relevanceScore": 0.88,
+    "publishedAt": "2025-07-18T02:15:21.567Z",
+    "tags": [
+      "figma button",
+      "figma",
+      "advanced"
+    ],
+    "views": 25000,
+    "timestamps": [],
+    "cached": true,
+    "cacheExpiry": "2025-07-19T02:15:21.567Z"
+  }
+]
