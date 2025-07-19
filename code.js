@@ -1,2 +1,289 @@
-(()=>{"use strict";console.log("[FigBud Plugin] Initializing...");const e={isUIVisible:!1,sandboxActive:!1,currentUser:null};if(figma.showUI(__html__,{width:420,height:640,title:"FigBud AI Assistant",visible:!1}),figma.command)switch(figma.command){case"open":figma.ui.show(),e.isUIVisible=!0,figma.ui.postMessage({type:"navigate",view:"chat"});break;case"open-sandbox":figma.ui.show(),e.isUIVisible=!0,e.sandboxActive=!0,figma.ui.postMessage({type:"navigate",view:"sandbox"});break;case"quick-button":t();break;case"quick-card":a();break;case"quick-input":i();break;default:figma.ui.show(),e.isUIVisible=!0}async function t(e){const t=figma.createFrame();t.name="FigBud Button",t.resize((null==e?void 0:e.width)||120,(null==e?void 0:e.height)||48),t.cornerRadius=8,t.fills=[{type:"SOLID",color:(null==e?void 0:e.color)||{r:.388,g:.4,b:.965}}],t.layoutMode="HORIZONTAL",t.paddingLeft=24,t.paddingRight=24,t.paddingTop=12,t.paddingBottom=12,t.primaryAxisAlignItems="CENTER",t.counterAxisAlignItems="CENTER";try{await figma.loadFontAsync({family:"Inter",style:"Medium"});const a=figma.createText();a.characters=(null==e?void 0:e.label)||"Click me",a.fontSize=16,a.fontName={family:"Inter",style:"Medium"},a.fills=[{type:"SOLID",color:{r:1,g:1,b:1}}],t.appendChild(a)}catch(e){console.error("[FigBud] Font loading error:",e)}o(t),figma.currentPage.selection=[t],figma.viewport.scrollAndZoomIntoView([t]),figma.notify("✅ Button created!")}async function a(e){const t=figma.createFrame();t.name="FigBud Card",t.resize((null==e?void 0:e.width)||320,(null==e?void 0:e.height)||240),t.cornerRadius=16,t.fills=[{type:"SOLID",color:{r:1,g:1,b:1}}],t.effects=[{type:"DROP_SHADOW",color:{r:0,g:0,b:0,a:.1},offset:{x:0,y:2},radius:8,visible:!0,blendMode:"NORMAL"}],t.layoutMode="VERTICAL",t.paddingLeft=24,t.paddingRight=24,t.paddingTop=24,t.paddingBottom=24,t.itemSpacing=16;try{await Promise.all([figma.loadFontAsync({family:"Inter",style:"Bold"}),figma.loadFontAsync({family:"Inter",style:"Regular"})]);const a=figma.createText();a.characters=(null==e?void 0:e.title)||"Card Title",a.fontSize=18,a.fontName={family:"Inter",style:"Bold"},a.fills=[{type:"SOLID",color:{r:.1,g:.1,b:.1}}],t.appendChild(a);const i=figma.createText();i.characters=(null==e?void 0:e.description)||"This is a card component created by FigBud AI.",i.fontSize=14,i.fontName={family:"Inter",style:"Regular"},i.fills=[{type:"SOLID",color:{r:.4,g:.4,b:.4}}],i.layoutAlign="STRETCH",t.appendChild(i)}catch(e){console.error("[FigBud] Font loading error:",e)}o(t),figma.currentPage.selection=[t],figma.viewport.scrollAndZoomIntoView([t]),figma.notify("✅ Card created!")}async function i(e){const t=figma.createFrame();t.name="FigBud Input",t.layoutMode="VERTICAL",t.itemSpacing=8;try{await Promise.all([figma.loadFontAsync({family:"Inter",style:"Medium"}),figma.loadFontAsync({family:"Inter",style:"Regular"})]);const a=figma.createText();a.characters=(null==e?void 0:e.label)||"Email address",a.fontSize=14,a.fontName={family:"Inter",style:"Medium"},a.fills=[{type:"SOLID",color:{r:.1,g:.1,b:.1}}],t.appendChild(a);const i=figma.createFrame();i.resize(320,48),i.cornerRadius=8,i.fills=[{type:"SOLID",color:{r:.98,g:.98,b:.98}}],i.strokes=[{type:"SOLID",color:{r:.8,g:.8,b:.8}}],i.strokeWeight=1,i.layoutMode="HORIZONTAL",i.paddingLeft=16,i.paddingRight=16,i.primaryAxisAlignItems="CENTER";const o=figma.createText();o.characters=(null==e?void 0:e.placeholder)||"Enter your email",o.fontSize=14,o.fontName={family:"Inter",style:"Regular"},o.fills=[{type:"SOLID",color:{r:.6,g:.6,b:.6}}],i.appendChild(o),t.appendChild(i)}catch(e){console.error("[FigBud] Font loading error:",e)}o(t),figma.currentPage.selection=[t],figma.viewport.scrollAndZoomIntoView([t]),figma.notify("✅ Input field created!")}function o(e){const t=figma.viewport.center;"x"in e&&"y"in e&&(e.x=Math.round(t.x-e.width/2),e.y=Math.round(t.y-e.height/2))}figma.ui.onmessage=async e=>{console.log("[FigBud Plugin] Received message:",e.type);try{switch(e.type){case"get-context":!function(){const e={selection:figma.currentPage.selection.map(e=>({id:e.id,name:e.name,type:e.type})),currentPage:{id:figma.currentPage.id,name:figma.currentPage.name},viewport:{center:figma.viewport.center,zoom:figma.viewport.zoom},user:figma.currentUser};figma.ui.postMessage({type:"context-response",payload:e})}();break;case"create-component":await async function(e){const{type:o,properties:n}=e;switch(o){case"button":t(n);break;case"card":a(n);break;case"input":i(n);break;default:throw new Error(`Unknown component type: ${o}`)}figma.ui.postMessage({type:"component-created",payload:{type:o,success:!0}})}(e.payload);break;case"create-sandbox-component":await async function(e){const{template:t,step:a}=e;try{if(a&&a.code){switch(console.log("[FigBud Sandbox] Executing step:",a.title),t.id){case"button":if("button-1"===a.id){const e=figma.createRectangle();e.resize(120,48),e.cornerRadius=8,e.fills=[{type:"SOLID",color:{r:.388,g:.4,b:.965}}],o(e)}break;case"card":if("card-1"===a.id){const e=figma.createFrame();e.resize(320,400),e.cornerRadius=16,e.fills=[{type:"SOLID",color:{r:1,g:1,b:1}}],o(e)}break;case"input":if("input-1"===a.id){const e=figma.createFrame();e.layoutMode="VERTICAL",e.itemSpacing=8,o(e)}}figma.notify(`✅ Step completed: ${a.title}`)}figma.ui.postMessage({type:"sandbox-step-complete",payload:{templateId:t.id,stepId:a.id}})}catch(e){console.error("[FigBud Sandbox] Error:",e),figma.notify("❌ Failed to complete step",{error:!0})}}(e.payload);break;case"chat-message":await async function(e){const o=e.toLowerCase();(o.includes("create")||o.includes("make")||o.includes("build"))&&(o.includes("button")?(t(),figma.ui.postMessage({type:"bot-response",message:"✅ Created a button component! Check your canvas.",metadata:{action:"component_created",componentType:"button"}})):o.includes("card")?(a(),figma.ui.postMessage({type:"bot-response",message:"✅ Created a card component! Check your canvas.",metadata:{action:"component_created",componentType:"card"}})):o.includes("input")&&(i(),figma.ui.postMessage({type:"bot-response",message:"✅ Created an input field! Check your canvas.",metadata:{action:"component_created",componentType:"input"}})))}(e.message);break;case"resize":figma.ui.resize(e.width||420,e.height||640);break;case"close":figma.closePlugin();break;case"get-user":figma.ui.postMessage({type:"user-response",payload:figma.currentUser});break;default:console.warn("[FigBud Plugin] Unknown message type:",e.type)}}catch(e){console.error("[FigBud Plugin] Error handling message:",e),figma.ui.postMessage({type:"error",error:e instanceof Error?e.message:"An error occurred"})}},console.log("[FigBud Plugin] Ready! Use the menu commands or open the UI.")})();
-//# sourceMappingURL=code.js.map
+// FigBud - Simple Vanilla JS Plugin
+console.log('[FigBud] Starting vanilla implementation...');
+
+// Font preloading
+async function preloadFonts() {
+    console.log('[FigBud] Preloading fonts...');
+    const fonts = [
+        { family: 'Inter', style: 'Regular' },
+        { family: 'Inter', style: 'Medium' },
+        { family: 'Inter', style: 'Bold' },
+    ];
+    
+    for (const font of fonts) {
+        try {
+            await figma.loadFontAsync(font);
+            console.log(`[FigBud] Loaded font: ${font.family} ${font.style}`);
+        } catch (error) {
+            console.warn(`[FigBud] Could not load font: ${font.family} ${font.style}`, error);
+        }
+    }
+}
+
+// Component creation functions
+async function createButton(props = {}) {
+    const button = figma.createFrame();
+    button.name = 'Button';
+    button.resize(120, 40);
+    button.cornerRadius = 8;
+    button.fills = [{ type: 'SOLID', color: { r: 0.388, g: 0.4, b: 0.945 } }];
+    
+    // Auto-layout
+    button.layoutMode = 'HORIZONTAL';
+    button.paddingLeft = 16;
+    button.paddingRight = 16;
+    button.paddingTop = 8;
+    button.paddingBottom = 8;
+    button.primaryAxisAlignItems = 'CENTER';
+    button.counterAxisAlignItems = 'CENTER';
+    
+    // Add text
+    const text = figma.createText();
+    await figma.loadFontAsync({ family: "Inter", style: "Medium" });
+    text.characters = props.text || "Button";
+    text.fontSize = 14;
+    text.fills = [{ type: 'SOLID', color: { r: 1, g: 1, b: 1 } }];
+    
+    button.appendChild(text);
+    
+    // Position at viewport center
+    button.x = figma.viewport.center.x - 60;
+    button.y = figma.viewport.center.y - 20;
+    
+    // Select and focus
+    figma.currentPage.selection = [button];
+    figma.viewport.scrollAndZoomIntoView([button]);
+    
+    return button;
+}
+
+async function createCard(props = {}) {
+    const card = figma.createFrame();
+    card.name = 'Card';
+    card.resize(320, 200);
+    card.cornerRadius = 12;
+    card.fills = [{ type: 'SOLID', color: { r: 0.1, g: 0.1, b: 0.1 } }];
+    card.strokes = [{ type: 'SOLID', color: { r: 1, g: 1, b: 1 }, opacity: 0.1 }];
+    card.strokeWeight = 1;
+    
+    // Auto-layout
+    card.layoutMode = 'VERTICAL';
+    card.paddingLeft = 24;
+    card.paddingRight = 24;
+    card.paddingTop = 24;
+    card.paddingBottom = 24;
+    card.itemSpacing = 16;
+    
+    // Title
+    const title = figma.createText();
+    await figma.loadFontAsync({ family: "Inter", style: "Bold" });
+    title.characters = props.title || "Card Title";
+    title.fontSize = 18;
+    title.fills = [{ type: 'SOLID', color: { r: 0.9, g: 0.9, b: 0.9 } }];
+    
+    // Description
+    const description = figma.createText();
+    await figma.loadFontAsync({ family: "Inter", style: "Regular" });
+    description.characters = props.description || "This is a card component created with FigBud";
+    description.fontSize = 14;
+    description.fills = [{ type: 'SOLID', color: { r: 0.6, g: 0.6, b: 0.6 } }];
+    description.layoutSizingHorizontal = 'FILL';
+    
+    card.appendChild(title);
+    card.appendChild(description);
+    
+    // Position
+    card.x = figma.viewport.center.x - 160;
+    card.y = figma.viewport.center.y - 100;
+    
+    // Select and focus
+    figma.currentPage.selection = [card];
+    figma.viewport.scrollAndZoomIntoView([card]);
+    
+    return card;
+}
+
+async function createInput(props = {}) {
+    const container = figma.createFrame();
+    container.name = 'Input Field';
+    container.resize(280, 72);
+    container.layoutMode = 'VERTICAL';
+    container.itemSpacing = 8;
+    container.fills = [];
+    
+    // Label
+    const label = figma.createText();
+    await figma.loadFontAsync({ family: "Inter", style: "Medium" });
+    label.characters = props.label || "Label";
+    label.fontSize = 12;
+    label.fills = [{ type: 'SOLID', color: { r: 0.6, g: 0.6, b: 0.6 } }];
+    
+    // Input field
+    const input = figma.createFrame();
+    input.resize(280, 40);
+    input.cornerRadius = 8;
+    input.fills = [{ type: 'SOLID', color: { r: 0.1, g: 0.1, b: 0.1 } }];
+    input.strokes = [{ type: 'SOLID', color: { r: 1, g: 1, b: 1 }, opacity: 0.1 }];
+    input.strokeWeight = 1;
+    
+    // Auto-layout for input
+    input.layoutMode = 'HORIZONTAL';
+    input.paddingLeft = 16;
+    input.paddingRight = 16;
+    input.paddingTop = 8;
+    input.paddingBottom = 8;
+    input.primaryAxisAlignItems = 'CENTER';
+    
+    // Placeholder text
+    const placeholder = figma.createText();
+    await figma.loadFontAsync({ family: "Inter", style: "Regular" });
+    placeholder.characters = props.placeholder || "Enter text...";
+    placeholder.fontSize = 14;
+    placeholder.fills = [{ type: 'SOLID', color: { r: 0.4, g: 0.4, b: 0.4 } }];
+    
+    input.appendChild(placeholder);
+    container.appendChild(label);
+    container.appendChild(input);
+    
+    // Position
+    container.x = figma.viewport.center.x - 140;
+    container.y = figma.viewport.center.y - 36;
+    
+    // Select and focus
+    figma.currentPage.selection = [container];
+    figma.viewport.scrollAndZoomIntoView([container]);
+    
+    return container;
+}
+
+async function createNavbar(props = {}) {
+    const navbar = figma.createFrame();
+    navbar.name = 'Navbar';
+    navbar.resize(800, 64);
+    navbar.fills = [{ type: 'SOLID', color: { r: 0.1, g: 0.1, b: 0.1 } }];
+    navbar.strokes = [{ type: 'SOLID', color: { r: 1, g: 1, b: 1 }, opacity: 0.1 }];
+    navbar.strokeWeight = 1;
+    navbar.strokeAlign = 'INSIDE';
+    
+    // Auto-layout
+    navbar.layoutMode = 'HORIZONTAL';
+    navbar.paddingLeft = 24;
+    navbar.paddingRight = 24;
+    navbar.primaryAxisAlignItems = 'CENTER';
+    navbar.counterAxisAlignItems = 'CENTER';
+    navbar.primaryAxisSizingMode = 'FIXED';
+    navbar.layoutAlign = 'STRETCH';
+    
+    // Brand
+    const brand = figma.createText();
+    await figma.loadFontAsync({ family: "Inter", style: "Bold" });
+    brand.characters = props.brand || "Brand";
+    brand.fontSize = 18;
+    brand.fills = [{ type: 'SOLID', color: { r: 0.9, g: 0.9, b: 0.9 } }];
+    
+    // Spacer
+    const spacer = figma.createFrame();
+    spacer.layoutGrow = 1;
+    spacer.fills = [];
+    
+    // Links container
+    const linksContainer = figma.createFrame();
+    linksContainer.layoutMode = 'HORIZONTAL';
+    linksContainer.itemSpacing = 32;
+    linksContainer.fills = [];
+    
+    // Create links
+    const links = props.links || ['Home', 'About', 'Contact'];
+    for (const linkText of links) {
+        const link = figma.createText();
+        await figma.loadFontAsync({ family: "Inter", style: "Regular" });
+        link.characters = linkText;
+        link.fontSize = 14;
+        link.fills = [{ type: 'SOLID', color: { r: 0.6, g: 0.6, b: 0.6 } }];
+        linksContainer.appendChild(link);
+    }
+    
+    navbar.appendChild(brand);
+    navbar.appendChild(spacer);
+    navbar.appendChild(linksContainer);
+    
+    // Position
+    navbar.x = figma.viewport.center.x - 400;
+    navbar.y = figma.viewport.center.y - 32;
+    
+    // Select and focus
+    figma.currentPage.selection = [navbar];
+    figma.viewport.scrollAndZoomIntoView([navbar]);
+    
+    return navbar;
+}
+
+// Initialize plugin
+async function init() {
+    try {
+        // Preload fonts
+        await preloadFonts();
+        console.log('[FigBud] Fonts loaded');
+        
+        // Show UI - Figma loads ui.html automatically
+        figma.showUI(__html__, {
+            width: 400,
+            height: 600,
+            title: 'FigBud AI Assistant'
+        });
+        
+        console.log('[FigBud] UI shown');
+    } catch (error) {
+        console.error('[FigBud] Initialization error:', error);
+        figma.notify('Failed to initialize FigBud');
+        figma.closePlugin();
+    }
+}
+
+// Handle messages from UI
+figma.ui.onmessage = async (msg) => {
+    console.log('[FigBud] Message from UI:', msg);
+    
+    try {
+        switch (msg.type) {
+            case 'create-component':
+                switch (msg.component) {
+                    case 'button':
+                        await createButton(msg.props);
+                        break;
+                    case 'card':
+                        await createCard(msg.props);
+                        break;
+                    case 'input':
+                        await createInput(msg.props);
+                        break;
+                    case 'navbar':
+                        await createNavbar(msg.props);
+                        break;
+                }
+                
+                // Send success message back
+                figma.ui.postMessage({
+                    type: 'component-created',
+                    component: msg.component
+                });
+                
+                figma.notify(`${msg.component} created!`);
+                break;
+                
+            case 'close':
+                figma.closePlugin();
+                break;
+        }
+    } catch (error) {
+        console.error('[FigBud] Error handling message:', error);
+        figma.ui.postMessage({
+            type: 'error',
+            error: error.message
+        });
+        figma.notify('Error: ' + error.message);
+    }
+};
+
+// Start the plugin
+init();
