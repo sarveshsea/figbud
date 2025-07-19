@@ -1,0 +1,19 @@
+/* Custom styles for SandboxView with Once UI integration */
+
+.sandbox-template-card:hover {
+  transform: translateY(-4px);
+  background: rgba(59, 130, 246, 0.08) !important;
+  border-color: rgba(59, 130, 246, 0.5) !important;
+  box-shadow: 0 8px 32px rgba(59, 130, 246, 0.15);
+}
+
+/* Enhanced glass morphism effect */
+.sandbox-area {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* Smooth animations */
+* {
+  transition: all 0.2s ease;
+}

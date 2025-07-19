@@ -1,28 +1,53 @@
 {
-  "name": "FigBud",
-  "id": "figbud-ai-assistant-2025-v2",
+  "name": "FigBud AI Assistant",
+  "id": "figbud-plugin-1752945749024-7vkfms1rj",
   "api": "1.0.0",
-  "widgetApi": "1.0.0",
-  "main": "dist/code.js",
-  "ui": "dist/ui.html",
-  "editorType": ["figma", "figjam"],
-  "containsWidget": true,
+  "main": "code.js",
+  "capabilities": [],
+  "enableProposedApi": false,
+  "editorType": ["figma"],
+  "ui": "ui.html",
+  "networkAccess": {
+    "allowedDomains": ["*"],
+    "reasoning": "FigBud needs to connect to AI services (OpenAI, DeepSeek, OpenRouter) and the backend server for chat functionality"
+  },
+  "documentAccess": "dynamic-page",
   "permissions": [
     "currentuser",
     "activeusers"
   ],
-  "capabilities": [],
-  "enableProposedApi": false,
-  "enablePrivatePluginApi": false,
-  "build": "",
-  "documentAccess": "dynamic-page",
-  "networkAccess": {
-    "allowedDomains": [
-      "https://api.openai.com",
-      "https://www.googleapis.com",
-      "https://api.assemblyai.com",
-      "https://your-backend-domain.com"
-    ],
-    "reasoning": "FigBud requires network access to fetch AI-powered tutorial recommendations from OpenAI API, search YouTube tutorials via Google API, extract timestamps via AssemblyAI, and communicate with the backend for user authentication and data storage."
-  }
+  "menu": [
+    {
+      "name": "Open FigBud AI",
+      "command": "open"
+    },
+    {
+      "separator": true
+    },
+    {
+      "name": "Open Sandbox Mode",
+      "command": "open-sandbox"
+    },
+    {
+      "separator": true
+    },
+    {
+      "name": "Quick Create Button",
+      "command": "quick-button"
+    },
+    {
+      "name": "Quick Create Card", 
+      "command": "quick-card"
+    },
+    {
+      "name": "Quick Create Input",
+      "command": "quick-input"
+    }
+  ],
+  "relaunchButtons": [
+    {
+      "command": "open",
+      "name": "Open FigBud AI"
+    }
+  ]
 }

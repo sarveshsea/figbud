@@ -8,6 +8,10 @@ import { join } from 'path';
 import authRoutes from './routes/auth';
 import chatRoutes from './routes/chat';
 
+// Import database and cache initialization
+import { initializeDatabase } from './config/databaseConfig';
+import { RedisService } from './services/redis';
+
 // Load environment variables
 dotenv.config();
 
@@ -33,6 +37,9 @@ app.use(cors({
     'https://figma.com',
     'https://www.figma.com',
     'http://localhost:8080', // For development
+    'http://localhost:3001', // For plugin UI development
+    'file://', // For local Figma plugin development
+    '*' // Allow all origins for development - restrict in production
   ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -111,9 +118,18 @@ process.on('SIGINT', () => {
   process.exit(0);
 });
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`
+// Initialize database and start server
+const startServer = async () => {
+  try {
+    // Initialize database
+    await initializeDatabase();
+    
+    // Initialize Redis cache
+    await RedisService.initialize();
+    
+    // Start server
+    app.listen(PORT, () => {
+      console.log(`
 🚀 FigBud Server is running!
    
 📍 Port: ${PORT}
@@ -126,12 +142,22 @@ app.listen(PORT, () => {
    POST /api/auth/login      - User login
    POST /api/chat/message    - Process chat messages
    GET  /api/chat/tutorials  - Search tutorials
+   POST /api/chat/analyze    - Analyze design
    
 🔗 Widget files:
    GET  /manifest.json       - Figma widget manifest
    GET  /code.js            - Widget code
    GET  /ui.html            - Widget UI
+   
+💾 Database: ${process.env.DATABASE_URL ? 'PostgreSQL' : 'File-based'}
   `);
-});
+    });
+  } catch (error) {
+    console.error('Failed to start server:', error);
+    process.exit(1);
+  }
+};
+
+startServer();
 
 export default app;

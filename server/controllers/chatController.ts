@@ -1,13 +1,17 @@
 import { Request, Response } from 'express';
 import axios from 'axios';
-import { Database } from '../config/database';
+import { DB } from '../config/databaseConfig';
 import { AuthenticatedRequest } from '../middleware/auth';
+import { OpenAIService } from '../services/openai';
+import { YouTubeService } from '../services/youtube';
+import { aiService } from '../services/ai-providers';
 
 export class ChatController {
   static async processMessage(req: AuthenticatedRequest, res: Response) {
+    const { message, context } = req.body;
+    const preferredProvider = req.body.provider || req.headers['x-ai-provider'] as string;
+    
     try {
-      const { message, context } = req.body;
-
       if (!message) {
         return res.status(400).json({
           success: false,
@@ -15,15 +19,26 @@ export class ChatController {
         });
       }
 
-      // Simple message processing for now
-      // In production, this would integrate with OpenAI API
-      const response = await processMessageWithAI(message, context, req.userId);
+      // Process message with AI service (supports multiple providers)
+      const user = req.userId ? await DB.findUserById(req.userId) : null;
+      const skillLevel = user?.preferences?.skillLevel || 'beginner';
+      
+      // Add timing for logging
+      const startTime = Date.now();
+      const enhancedContext = { ...context, userId: req.userId, startTime };
+      
+      const response = await aiService.processQuery(
+        message, 
+        enhancedContext, 
+        skillLevel,
+        preferredProvider
+      );
 
       // Update user analytics if authenticated
       if (req.userId) {
-        const user = Database.findUserById(req.userId);
+        const user = await DB.findUserById(req.userId);
         if (user) {
-          Database.updateUser(req.userId, {
+          DB.updateUser(req.userId, {
             analytics: {
               ...user.analytics,
               totalQueries: user.analytics.totalQueries + 1,
@@ -35,15 +50,32 @@ export class ChatController {
 
       res.json({
         success: true,
-        response: response?.text || 'No response generated',
-        metadata: response?.metadata || {}
+        response: response.text,
+        metadata: response.metadata || {},
+        provider: response.provider,
+        model: (response.metadata as any)?.model || 'unknown',
+        isFree: (response.metadata as any)?.isFree || false,
+        attempts: (response.metadata as any)?.attempts || [],
+        availableProviders: aiService.getAvailableProviders()
       });
 
     } catch (error) {
       console.error('Process message error:', error);
+      
+      // Provide more detailed error messages
+      let errorMessage = 'Failed to process message';
+      const err = error as Error;
+      if (err.message && err.message.includes('API key')) {
+        errorMessage = 'AI service not configured. Please check API keys.';
+      } else if (err.message && err.message.includes('provider')) {
+        errorMessage = 'AI provider not available. Please check configuration.';
+      }
+      
       return res.status(500).json({
         success: false,
-        message: 'Failed to process message'
+        message: errorMessage,
+        provider: preferredProvider || 'unknown',
+        availableProviders: aiService.getAvailableProviders()
       });
     }
   }
@@ -60,7 +92,7 @@ export class ChatController {
       }
 
       // Check cache first
-      const cachedTutorials = Database.findCachedTutorials(query as string);
+      const cachedTutorials = await DB.findCachedTutorials(query as string);
       if (cachedTutorials.length > 0) {
         return res.json({
           success: true,
@@ -69,12 +101,16 @@ export class ChatController {
         });
       }
 
-      // Mock tutorial search (replace with real YouTube API integration)
-      const tutorials = await mockYouTubeSearch(query as string, skillLevel as string);
+      // Search YouTube for tutorials
+      const tutorials = await YouTubeService.searchTutorials(
+        query as string, 
+        skillLevel as string, 
+        Number(maxResults)
+      );
 
       // Cache results
       tutorials.forEach(tutorial => {
-        Database.cacheTutorial({
+        DB.cacheTutorial({
           ...tutorial,
           cached: true,
           cacheExpiry: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
@@ -83,9 +119,9 @@ export class ChatController {
 
       // Update analytics
       if (req.userId) {
-        const user = Database.findUserById(req.userId);
+        const user = await DB.findUserById(req.userId);
         if (user) {
-          Database.updateUser(req.userId, {
+          DB.updateUser(req.userId, {
             analytics: {
               ...user.analytics,
               featureUsage: {
@@ -124,7 +160,7 @@ export class ChatController {
       }
 
       // Check if user has premium access for advanced demos
-      const user = req.userId ? Database.findUserById(req.userId) : null;
+      const user = req.userId ? await DB.findUserById(req.userId) : null;
       const isPremiumUser = user?.subscription.tier === 'premium';
 
       // Mock demo creation (replace with real template system)
@@ -132,9 +168,9 @@ export class ChatController {
 
       // Update analytics
       if (req.userId) {
-        const user = Database.findUserById(req.userId);
+        const user = await DB.findUserById(req.userId);
         if (user) {
-          Database.updateUser(req.userId, {
+          DB.updateUser(req.userId, {
             analytics: {
               ...user.analytics,
               demosCreated: user.analytics.demosCreated + 1,
@@ -173,14 +209,15 @@ export class ChatController {
         });
       }
 
-      // Mock guidance generation (replace with real AI system)
-      const guidance = await mockGuidanceGeneration(query, context, userLevel);
+      // Use OpenAI for guidance generation
+      const skillLevel = userLevel || 'beginner';
+      const response = await OpenAIService.processDesignQuery(query, context, skillLevel);
 
       // Update analytics
       if (req.userId) {
-        const user = Database.findUserById(req.userId);
+        const user = await DB.findUserById(req.userId);
         if (user) {
-          Database.updateUser(req.userId, {
+          DB.updateUser(req.userId, {
             analytics: {
               ...user.analytics,
               featureUsage: {
@@ -194,7 +231,8 @@ export class ChatController {
 
       res.json({
         success: true,
-        guidance
+        guidance: response.metadata?.guidance || [],
+        message: response.text
       });
 
     } catch (error) {
@@ -202,6 +240,53 @@ export class ChatController {
       return res.status(500).json({
         success: false,
         message: 'Failed to generate guidance'
+      });
+    }
+  }
+
+  static async analyzeDesign(req: AuthenticatedRequest, res: Response) {
+    try {
+      const { context, analysisType = 'general' } = req.body;
+
+      if (!context) {
+        return res.status(400).json({
+          success: false,
+          message: 'Design context is required'
+        });
+      }
+
+      // Analyze design with OpenAI
+      const response = await OpenAIService.analyzeDesign(
+        context, 
+        analysisType as 'color' | 'typography' | 'spacing' | 'general'
+      );
+
+      // Update analytics
+      if (req.userId) {
+        const user = await DB.findUserById(req.userId);
+        if (user) {
+          DB.updateUser(req.userId, {
+            analytics: {
+              ...user.analytics,
+              totalQueries: user.analytics.totalQueries + 1,
+              lastActiveAt: new Date(),
+            }
+          });
+        }
+      }
+
+      res.json({
+        success: true,
+        analysis: response.text,
+        suggestions: response.metadata?.suggestions || [],
+        guidance: response.metadata?.guidance || []
+      });
+
+    } catch (error) {
+      console.error('Design analysis error:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to analyze design'
       });
     }
   }

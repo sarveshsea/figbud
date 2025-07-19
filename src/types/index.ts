@@ -43,22 +43,29 @@ export interface WidgetState {
   isVisible: boolean;
   isAuthenticated: boolean;
   user: UserProfile | null;
-  currentView: 'chat' | 'onboarding' | 'settings' | 'premium';
+  currentView: 'chat' | 'onboarding' | 'settings' | 'premium' | 'sandbox';
   onboardingStep: number;
   messages: ChatMessage[];
   loading: boolean;
   error: string | null;
+  playgroundActive?: boolean;
 }
 
 export interface ChatMessage {
   id: string;
-  type: 'user' | 'assistant' | 'system';
+  type: 'user' | 'assistant' | 'system' | 'bot';
   content: string;
   timestamp: Date;
   metadata?: {
     tutorials?: TutorialResult[];
     demos?: DemoResult[];
     guidance?: GuidanceStep[];
+    action?: string;
+    componentType?: string;
+    teacherNote?: string;
+    model?: string;
+    isFree?: boolean;
+    attempts?: { model: string; success: boolean; error?: string }[];
   };
 }
 

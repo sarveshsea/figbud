@@ -6,6 +6,9 @@ import { ChatView } from './components/ChatView';
 import { OnboardingView } from './components/OnboardingView';
 import { SettingsView } from './components/SettingsView';
 import { PremiumView } from './components/PremiumView';
+import { SandboxView } from './components/SandboxView';
+import { OnceUIProvider } from './providers/OnceUIProvider';
+import { storage } from './utils/storage';
 import './styles/main.css';
 
 const App: React.FC = () => {
@@ -23,7 +26,7 @@ const App: React.FC = () => {
   useEffect(() => {
     // Check for existing authentication
     const checkAuth = async () => {
-      const token = localStorage.getItem('figbud_token');
+      const token = storage.getItem('figbud_token');
       if (token) {
         try {
           // Validate token with backend
@@ -42,8 +45,8 @@ const App: React.FC = () => {
               currentView: data.user.preferences?.skillLevel ? 'chat' : 'onboarding',
             }));
           } else {
-            localStorage.removeItem('figbud_token');
-            localStorage.removeItem('figbud_refresh_token');
+            storage.removeItem('figbud_token');
+            storage.removeItem('figbud_refresh_token');
           }
         } catch (error) {
           console.error('Auth check failed:', error);
@@ -72,6 +75,12 @@ const App: React.FC = () => {
         case 'guidance-added':
           handleGuidanceAdded(payload);
           break;
+        case 'bot-response':
+          handleBotResponse(event.data.pluginMessage);
+          break;
+        case 'playground-activated':
+          setState(prev => ({ ...prev, playgroundActive: true }));
+          break;
         case 'error':
           setState(prev => ({ ...prev, error: payload.message, loading: false }));
           break;
@@ -96,8 +105,8 @@ const App: React.FC = () => {
   }, []);
 
   const handleAuth = (user: UserProfile, token: string, refreshToken: string) => {
-    localStorage.setItem('figbud_token', token);
-    localStorage.setItem('figbud_refresh_token', refreshToken);
+    storage.setItem('figbud_token', token);
+    storage.setItem('figbud_refresh_token', refreshToken);
     
     setState(prev => ({
       ...prev,
@@ -109,8 +118,8 @@ const App: React.FC = () => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('figbud_token');
-    localStorage.removeItem('figbud_refresh_token');
+    storage.removeItem('figbud_token');
+    storage.removeItem('figbud_refresh_token');
     
     setState(prev => ({
       ...prev,
@@ -123,6 +132,13 @@ const App: React.FC = () => {
   };
 
   const handleMessage = async (content: string) => {
+    // Check for sandbox/playground keywords
+    const lowerContent = content.toLowerCase();
+    if (lowerContent.includes('sandbox') || lowerContent.includes('playground') || lowerContent.includes('practice')) {
+      setState(prev => ({ ...prev, currentView: 'sandbox' }));
+      return;
+    }
+    
     const userMessage: ChatMessage = {
       id: Date.now().toString(),
       type: 'user',
@@ -139,8 +155,15 @@ const App: React.FC = () => {
 
     try {
       // Send message to backend for processing
-      const token = localStorage.getItem('figbud_token');
-      const response = await fetch('/api/chat/message', {
+      const token = storage.getItem('figbud_token');
+      // Use localhost for development - update for production
+      const apiUrl = process.env.NODE_ENV === 'production' 
+        ? '/api/chat/message' 
+        : 'http://localhost:3000/api/chat/message';
+      
+      console.log('[FigBud] Sending message to:', apiUrl);
+      
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -167,15 +190,62 @@ const App: React.FC = () => {
           messages: [...prev.messages, assistantMessage],
           loading: false,
         }));
+
+        // If AI suggests creating a component, send message to Figma
+        if (data.metadata?.action === 'component_created' && data.metadata?.componentType) {
+          parent.postMessage({
+            pluginMessage: {
+              type: 'chat-message',
+              message: `create ${data.metadata.componentType}`
+            }
+          }, '*');
+        }
+
+        // Show provider info in console for debugging
+        console.log(`AI Response from: ${data.provider || 'unknown'}`);
+        console.log(`Model: ${data.model} (${data.isFree ? 'FREE' : 'PAID'})`);
+        if (data.attempts && data.attempts.length > 1) {
+          console.log('Model cascade:', data.attempts);
+        }
       } else {
-        throw new Error('Failed to get response');
+        const errorText = await response.text();
+        console.error('[FigBud] API error:', response.status, errorText);
+        throw new Error(`Failed to get response: ${response.status}`);
       }
     } catch (error) {
-      console.error('Message error:', error);
+      console.error('[FigBud] Message error:', error);
+      
+      // Provide more specific error messages
+      let errorMessage = 'Failed to send message. ';
+      if (error instanceof Error) {
+        if (error.message.includes('Failed to fetch')) {
+          errorMessage += 'Make sure the backend server is running on http://localhost:3000';
+        } else {
+          errorMessage += error.message;
+        }
+      }
+      
       setState(prev => ({
         ...prev,
-        error: 'Failed to send message. Please try again.',
+        error: errorMessage,
         loading: false,
+      }));
+      
+      // Add a fallback response when API is unavailable
+      const fallbackMessage: ChatMessage = {
+        id: (Date.now() + 1).toString(),
+        type: 'assistant',
+        content: "I'm currently unable to connect to the AI service. However, I can still help you create components! Try saying 'create a button' or 'make a card' to get started.",
+        timestamp: new Date(),
+        metadata: {
+          model: 'fallback',
+          isFree: true
+        }
+      };
+      
+      setState(prev => ({
+        ...prev,
+        messages: [...prev.messages, fallbackMessage],
       }));
     }
   };
@@ -215,6 +285,22 @@ const App: React.FC = () => {
     }));
   };
 
+  const handleBotResponse = (pluginMessage: any) => {
+    const botMessage: ChatMessage = {
+      id: Date.now().toString(),
+      type: 'bot',
+      content: pluginMessage.message || pluginMessage.payload,
+      timestamp: new Date(),
+      metadata: pluginMessage.metadata
+    };
+
+    setState(prev => ({
+      ...prev,
+      messages: [...prev.messages, botMessage],
+      loading: false,
+    }));
+  };
+
   const getFigmaContext = async (): Promise<any> => {
     return new Promise((resolve) => {
       const handleMessage = (event: MessageEvent) => {
@@ -239,7 +325,7 @@ const App: React.FC = () => {
 
   const updateUserPreferences = async (preferences: any) => {
     try {
-      const token = localStorage.getItem('figbud_token');
+      const token = storage.getItem('figbud_token');
       const response = await fetch('/api/auth/profile', {
         method: 'PUT',
         headers: {
@@ -293,6 +379,21 @@ const App: React.FC = () => {
             onBack={() => setState(prev => ({ ...prev, currentView: 'chat' }))}
           />
         );
+      case 'sandbox':
+        return (
+          <SandboxView
+            onCreateComponent={(template, step) => {
+              // Send message to Figma plugin
+              parent.postMessage({
+                pluginMessage: {
+                  type: 'create-sandbox-component',
+                  payload: { template, step }
+                }
+              }, '*');
+            }}
+            onBack={() => setState(prev => ({ ...prev, currentView: 'chat' }))}
+          />
+        );
       case 'chat':
       default:
         return (
@@ -302,7 +403,8 @@ const App: React.FC = () => {
             error={state.error}
             user={state.user}
             onSendMessage={handleMessage}
-            onNavigate={(view: 'chat' | 'settings' | 'premium' | 'onboarding') => setState(prev => ({ ...prev, currentView: view }))}
+            onNavigate={(view: 'chat' | 'settings' | 'premium' | 'onboarding' | 'sandbox') => setState(prev => ({ ...prev, currentView: view }))}
+            playgroundActive={state.playgroundActive || false}
           />
         );
     }
@@ -319,5 +421,9 @@ const App: React.FC = () => {
 const container = document.getElementById('root');
 if (container) {
   const root = createRoot(container);
-  root.render(<App />);
+  root.render(
+    <OnceUIProvider>
+      <App />
+    </OnceUIProvider>
+  );
 }

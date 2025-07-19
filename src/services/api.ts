@@ -1,4 +1,5 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
+import { storage } from '../utils/storage';
 
 const API_BASE_URL = process.env.NODE_ENV === 'production' 
   ? 'https://api.figbud.com' 
@@ -19,7 +20,7 @@ class ApiService {
     // Request interceptor to add auth token
     this.client.interceptors.request.use(
       (config) => {
-        const token = localStorage.getItem('figbud_token');
+        const token = storage.getItem('figbud_token');
         if (token) {
           config.headers.Authorization = `Bearer ${token}`;
         }
@@ -38,23 +39,23 @@ class ApiService {
           originalRequest._retry = true;
 
           try {
-            const refreshToken = localStorage.getItem('figbud_refresh_token');
+            const refreshToken = storage.getItem('figbud_refresh_token');
             if (refreshToken) {
               const response = await this.client.post('/api/auth/refresh', {
                 refreshToken,
               });
 
               const { token, refreshToken: newRefreshToken } = response.data;
-              localStorage.setItem('figbud_token', token);
-              localStorage.setItem('figbud_refresh_token', newRefreshToken);
+              storage.setItem('figbud_token', token);
+              storage.setItem('figbud_refresh_token', newRefreshToken);
 
               originalRequest.headers.Authorization = `Bearer ${token}`;
               return this.client(originalRequest);
             }
           } catch (refreshError) {
             // Refresh failed, clear tokens and redirect to login
-            localStorage.removeItem('figbud_token');
-            localStorage.removeItem('figbud_refresh_token');
+            storage.removeItem('figbud_token');
+            storage.removeItem('figbud_refresh_token');
             window.location.reload();
           }
         }

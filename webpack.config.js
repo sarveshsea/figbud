@@ -9,7 +9,7 @@ module.exports = (env, argv) => {
     devtool: isProduction ? 'source-map' : 'eval-source-map',
     
     entry: {
-      code: './src/code.js',
+      code: './src/code.ts',
       ui: './src/ui.tsx'
     },
     
@@ -29,6 +29,10 @@ module.exports = (env, argv) => {
         {
           test: /\.css$/,
           use: ['style-loader', 'css-loader']
+        },
+        {
+          test: /\.scss$/,
+          use: ['style-loader', 'css-loader', 'sass-loader']
         },
         {
           test: /\.(png|jpg|gif|svg)$/,

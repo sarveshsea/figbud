@@ -75,6 +75,7 @@ export interface Tutorial {
   thumbnailUrl: string;
   duration: number;
   channelTitle: string;
+  url: string;
   publishedAt: Date;
   skillLevel: 'beginner' | 'intermediate' | 'advanced';
   tags: string[];
@@ -89,6 +90,7 @@ export interface TutorialTimestamp {
   time: number; // seconds
   description: string;
   topic: string;
+  url?: string;
 }
 
 export interface DemoTemplate {

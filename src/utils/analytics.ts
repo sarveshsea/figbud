@@ -1,4 +1,5 @@
 import { AnalyticsEvent } from '../types';
+import { storage } from './storage';
 
 class AnalyticsService {
   private events: AnalyticsEvent[] = [];
@@ -100,7 +101,7 @@ class AnalyticsService {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('figbud_token')}`,
+          'Authorization': `Bearer ${storage.getItem('figbud_token')}`,
         },
         body: JSON.stringify({ events: this.events }),
       });

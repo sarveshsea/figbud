@@ -1,10 +1,11 @@
 import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import { v4 as uuidv4 } from 'uuid';
-import { Database } from '../config/database';
+import { DB } from '../config/databaseConfig';
 import { JwtService } from '../config/jwt';
 import { User, Session } from '../models/User';
 import { AuthenticatedRequest } from '../middleware/auth';
+import { SupabaseAuthService } from '../services/supabaseAuth';
 
 export class AuthController {
   static async register(req: Request, res: Response) {
@@ -26,102 +27,22 @@ export class AuthController {
         });
       }
 
-      // Check if user already exists
-      const existingUser = Database.findUserByEmail(email);
-      if (existingUser) {
+      // Use Supabase auth service
+      const result = await SupabaseAuthService.register(email, password, figmaUserId);
+
+      if (!result.success) {
         return res.status(409).json({
           success: false,
-          message: 'User with this email already exists'
+          message: result.error || 'Registration failed'
         });
       }
-
-      // Hash password
-      const hashedPassword = await bcrypt.hash(password, 12);
-
-      // Create user
-      const user: User = {
-        id: uuidv4(),
-        email,
-        password: hashedPassword,
-        figmaUserId,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        isEmailVerified: false,
-        emailVerificationToken: JwtService.generateSecureToken(),
-        subscription: {
-          tier: 'free',
-          cancelAtPeriodEnd: false,
-          status: 'active'
-        },
-        preferences: {
-          skillLevel: 'beginner',
-          designStyle: 'modern',
-          commonUseCases: [],
-          preferredTutorialLength: 'any',
-          notifications: {
-            email: true,
-            inApp: true,
-            weekly: true
-          },
-          theme: 'auto'
-        },
-        analytics: {
-          totalQueries: 0,
-          tutorialsViewed: 0,
-          demosCreated: 0,
-          lastActiveAt: new Date(),
-          featureUsage: {
-            tutorialSearch: 0,
-            demoCreation: 0,
-            guidance: 0,
-            collaboration: 0
-          },
-          learningProgress: {
-            completedTutorials: [],
-            badgesEarned: []
-          }
-        }
-      };
-
-      const createdUser = Database.createUser(user);
-
-      // Generate tokens
-      const { accessToken, refreshToken } = JwtService.generateTokenPair({
-        userId: createdUser.id,
-        email: createdUser.email,
-        figmaUserId: createdUser.figmaUserId
-      });
-
-      // Create session
-      const session: Session = {
-        id: uuidv4(),
-        userId: createdUser.id,
-        token: accessToken,
-        refreshToken,
-        expiresAt: JwtService.getTokenExpiry(accessToken) || new Date(Date.now() + 60 * 60 * 1000),
-        createdAt: new Date(),
-        lastAccessedAt: new Date(),
-        userAgent: req.headers['user-agent'],
-        ipAddress: req.ip
-      };
-
-      Database.createSession(session);
-
-      // Return response without password
-      const { password: _, ...userResponse } = createdUser;
 
       res.status(201).json({
         success: true,
         message: 'User registered successfully',
-        token: accessToken,
-        refreshToken,
-        user: {
-          id: userResponse.id,
-          email: userResponse.email,
-          figmaUserId: userResponse.figmaUserId,
-          subscription: userResponse.subscription,
-          preferences: userResponse.preferences
-        }
+        token: result.token,
+        refreshToken: result.refreshToken,
+        user: result.user
       });
 
     } catch (error) {
@@ -145,66 +66,22 @@ export class AuthController {
         });
       }
 
-      // Find user
-      const user = Database.findUserByEmail(email);
-      if (!user) {
+      // Use Supabase auth service
+      const result = await SupabaseAuthService.login(email, password);
+
+      if (!result.success) {
         return res.status(401).json({
           success: false,
-          message: 'Invalid email or password'
+          message: result.error || 'Invalid email or password'
         });
       }
-
-      // Verify password
-      const isValidPassword = await bcrypt.compare(password, user.password);
-      if (!isValidPassword) {
-        return res.status(401).json({
-          success: false,
-          message: 'Invalid email or password'
-        });
-      }
-
-      // Generate tokens
-      const { accessToken, refreshToken } = JwtService.generateTokenPair({
-        userId: user.id,
-        email: user.email,
-        figmaUserId: user.figmaUserId
-      });
-
-      // Create session
-      const session: Session = {
-        id: uuidv4(),
-        userId: user.id,
-        token: accessToken,
-        refreshToken,
-        expiresAt: JwtService.getTokenExpiry(accessToken) || new Date(Date.now() + 60 * 60 * 1000),
-        createdAt: new Date(),
-        lastAccessedAt: new Date(),
-        userAgent: req.headers['user-agent'],
-        ipAddress: req.ip
-      };
-
-      Database.createSession(session);
-
-      // Update last active
-      Database.updateUser(user.id, {
-        analytics: {
-          ...user.analytics,
-          lastActiveAt: new Date()
-        }
-      });
 
       res.json({
         success: true,
         message: 'Login successful',
-        token: accessToken,
-        refreshToken,
-        user: {
-          id: user.id,
-          email: user.email,
-          figmaUserId: user.figmaUserId,
-          subscription: user.subscription,
-          preferences: user.preferences
-        }
+        token: result.token,
+        refreshToken: result.refreshToken,
+        user: result.user
       });
 
     } catch (error) {
@@ -227,48 +104,20 @@ export class AuthController {
         });
       }
 
-      const payload = JwtService.verifyRefreshToken(refreshToken);
-      if (!payload) {
+      // Use Supabase auth service
+      const result = await SupabaseAuthService.refreshToken(refreshToken);
+
+      if (!result.success) {
         return res.status(403).json({
           success: false,
-          message: 'Invalid refresh token'
+          message: result.error || 'Invalid refresh token'
         });
       }
-
-      const user = Database.findUserById(payload.userId);
-      if (!user) {
-        return res.status(404).json({
-          success: false,
-          message: 'User not found'
-        });
-      }
-
-      // Generate new tokens
-      const { accessToken, refreshToken: newRefreshToken } = JwtService.generateTokenPair({
-        userId: user.id,
-        email: user.email,
-        figmaUserId: user.figmaUserId
-      });
-
-      // Update session
-      const session: Session = {
-        id: uuidv4(),
-        userId: user.id,
-        token: accessToken,
-        refreshToken: newRefreshToken,
-        expiresAt: JwtService.getTokenExpiry(accessToken) || new Date(Date.now() + 60 * 60 * 1000),
-        createdAt: new Date(),
-        lastAccessedAt: new Date(),
-        userAgent: req.headers['user-agent'],
-        ipAddress: req.ip
-      };
-
-      Database.createSession(session);
 
       res.json({
         success: true,
-        token: accessToken,
-        refreshToken: newRefreshToken
+        token: result.token,
+        refreshToken: result.refreshToken
       });
 
     } catch (error) {
@@ -286,7 +135,10 @@ export class AuthController {
       const token = authHeader && authHeader.split(' ')[1];
 
       if (token) {
-        Database.deleteSession(token);
+        const result = await SupabaseAuthService.logout(token);
+        if (!result.success) {
+          console.error('Logout failed:', result.error);
+        }
       }
 
       res.json({
@@ -312,7 +164,7 @@ export class AuthController {
         });
       }
 
-      const user = Database.findUserById(req.userId);
+      const user = await DB.findUserById(req.userId);
       if (!user) {
         return res.status(404).json({
           success: false,
@@ -352,7 +204,7 @@ export class AuthController {
 
       const { preferences } = req.body;
 
-      const updatedUser = Database.updateUser(req.userId, {
+      const updatedUser = await DB.updateUser(req.userId, {
         preferences,
         updatedAt: new Date()
       });

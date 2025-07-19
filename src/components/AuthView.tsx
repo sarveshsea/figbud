@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { UserProfile } from '../types';
+import { Button, Input, Text, Card, Flex, Heading, Badge } from '@once-ui-system/core';
 
 interface AuthViewProps {
   onAuth: (user: UserProfile, token: string, refreshToken: string) => void;
@@ -74,84 +75,106 @@ export const AuthView: React.FC<AuthViewProps> = ({ onAuth }) => {
   };
 
   return (
-    <div className="auth-view">
-      <div className="auth-header">
-        <div className="auth-logo">
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
-            <path d="M12 2L13.09 8.26L20 9L13.09 9.74L12 16L10.91 9.74L4 9L10.91 8.26L12 2Z" fill="#F24E1E"/>
+    <Card
+      padding="l"
+      radius="l"
+      style={{
+        maxWidth: '400px',
+        margin: '2rem auto',
+        background: 'rgba(255, 255, 255, 0.02)',
+        border: '1px solid rgba(255, 255, 255, 0.08)',
+      }}
+    >
+      <Flex
+        direction="column"
+        horizontal="center"
+        gap="m"
+        style={{ marginBottom: '2rem' }}
+      >
+        <Badge color="brand">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path d="M12 2L13.09 8.26L20 9L13.09 9.74L12 16L10.91 9.74L4 9L10.91 8.26L12 2Z" fill="currentColor"/>
           </svg>
-        </div>
-        <h1>Welcome to FigBud</h1>
-        <p>Your AI-powered Figma assistant</p>
-      </div>
+        </Badge>
+        <Heading variant="display-strong-s">Welcome to FigBud</Heading>
+        <Text variant="body-default-m" onBackground="neutral-weak">
+          Your AI-powered Figma assistant
+        </Text>
+      </Flex>
 
-      <form onSubmit={handleSubmit} className="auth-form">
-        <div className="form-group">
-          <label htmlFor="email">Email</label>
-          <input
-            type="email"
+      <form onSubmit={handleSubmit}>
+        <Flex direction="column" gap="m">
+          <Input
             id="email"
+            label="Email"
+            type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="figma-input"
             placeholder="Enter your email"
             required
           />
-        </div>
 
-        <div className="form-group">
-          <label htmlFor="password">Password</label>
-          <input
-            type="password"
+          <Input
             id="password"
+            label="Password"
+            type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="figma-input"
             placeholder="Enter your password"
             required
           />
-        </div>
 
-        {error && (
-          <div className="error-message">
-            {error}
-          </div>
-        )}
+          {error && (
+            <Badge color="danger" style={{ width: '100%', justifyContent: 'center' }}>
+              {error}
+            </Badge>
+          )}
 
-        <button
-          type="submit"
-          className="figma-button auth-submit"
-          disabled={loading || !email || !password}
-        >
-          {loading ? 'Please wait...' : mode === 'signin' ? 'Sign In' : 'Create Account'}
-        </button>
-
-        <div className="auth-toggle">
-          <button
-            type="button"
-            className="link-button"
-            onClick={() => setMode(mode === 'signin' ? 'signup' : 'signin')}
+          <Button
+            type="submit"
+            variant="primary"
+            size="l"
+            fillWidth
+            disabled={loading || !email || !password}
           >
-            {mode === 'signin' ? "Don't have an account? Sign up" : 'Already have an account? Sign in'}
-          </button>
-        </div>
+            {loading ? 'Please wait...' : mode === 'signin' ? 'Sign In' : 'Create Account'}
+          </Button>
 
-        <div className="auth-divider">
-          <span>or</span>
-        </div>
+          <Flex horizontal="center">
+            <Button
+              variant="tertiary"
+              size="s"
+              onClick={() => setMode(mode === 'signin' ? 'signup' : 'signin')}
+            >
+              {mode === 'signin' ? "Don't have an account? Sign up" : 'Already have an account? Sign in'}
+            </Button>
+          </Flex>
 
-        <button
-          type="button"
-          className="guest-button"
-          onClick={handleTryWithoutAccount}
-        >
-          Try without account
-        </button>
+          <Flex horizontal="center" gap="s" style={{ margin: '1rem 0' }}>
+            <div style={{ flex: 1, height: '1px', background: 'rgba(255, 255, 255, 0.1)' }} />
+            <Text variant="body-default-s" onBackground="neutral-weak">or</Text>
+            <div style={{ flex: 1, height: '1px', background: 'rgba(255, 255, 255, 0.1)' }} />
+          </Flex>
+
+          <Button
+            variant="secondary"
+            size="l"
+            fillWidth
+            onClick={handleTryWithoutAccount}
+          >
+            Try without account
+          </Button>
+        </Flex>
       </form>
 
-      <div className="auth-footer">
-        <p>By continuing, you agree to FigBud's Terms of Service and Privacy Policy.</p>
-      </div>
-    </div>
+      <Text
+        variant="body-default-xs"
+        onBackground="neutral-weak"
+        align="center"
+        style={{ marginTop: '2rem' }}
+      >
+        By continuing, you agree to FigBud's Terms of Service and Privacy Policy.
+      </Text>
+    </Card>
   );
 };

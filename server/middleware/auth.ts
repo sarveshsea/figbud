@@ -1,13 +1,14 @@
 import { Request, Response, NextFunction } from 'express';
 import { JwtService, JwtPayload } from '../config/jwt';
-import { Database } from '../config/database';
+import { DB } from '../config/databaseConfig';
+import { RedisService } from '../services/redis';
 
 export interface AuthenticatedRequest extends Request {
   user?: JwtPayload;
   userId?: string;
 }
 
-export const authenticateToken = (req: AuthenticatedRequest, res: Response, next: NextFunction): void => {
+export const authenticateToken = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
 
@@ -28,36 +29,49 @@ export const authenticateToken = (req: AuthenticatedRequest, res: Response, next
     return;
   }
 
-  // Check if session exists and is valid
-  const session = Database.findSessionByToken(token);
+  // Check Redis cache for session first
+  const sessionCacheKey = RedisService.keys.userSession(token);
+  let session = await RedisService.getJSON(sessionCacheKey);
+  
   if (!session) {
-    res.status(403).json({ 
-      success: false, 
-      message: 'Session not found or expired' 
-    });
-    return;
+    // Check database if not in cache
+    session = await DB.findSessionByToken(token);
+    if (!session) {
+      res.status(403).json({ 
+        success: false, 
+        message: 'Session not found or expired' 
+      });
+      return;
+    }
+    // Cache the session
+    await RedisService.setJSON(sessionCacheKey, session, RedisService.TTL.USER_SESSION);
   }
-
-  // Update last accessed time
-  session.lastAccessedAt = new Date();
 
   req.user = payload;
   req.userId = payload.userId;
   next();
 };
 
-export const optionalAuth = (req: AuthenticatedRequest, res: Response, next: NextFunction): void => {
+export const optionalAuth = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
 
   if (token) {
     const payload = JwtService.verifyAccessToken(token);
     if (payload) {
-      const session = Database.findSessionByToken(token);
+      const sessionCacheKey = RedisService.keys.userSession(token);
+      let session = await RedisService.getJSON(sessionCacheKey);
+      
+      if (!session) {
+        session = await DB.findSessionByToken(token);
+        if (session) {
+          await RedisService.setJSON(sessionCacheKey, session, RedisService.TTL.USER_SESSION);
+        }
+      }
+      
       if (session) {
         req.user = payload;
         req.userId = payload.userId;
-        session.lastAccessedAt = new Date();
       }
     }
   }
@@ -65,7 +79,7 @@ export const optionalAuth = (req: AuthenticatedRequest, res: Response, next: Nex
   next();
 };
 
-export const requirePremium = (req: AuthenticatedRequest, res: Response, next: NextFunction): void => {
+export const requirePremium = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
   if (!req.userId) {
     res.status(401).json({ 
       success: false, 
@@ -74,8 +88,18 @@ export const requirePremium = (req: AuthenticatedRequest, res: Response, next: N
     return;
   }
 
-  const user = Database.findUserById(req.userId);
-  if (!user || user.subscription.tier !== 'premium' || user.subscription.status !== 'active') {
+  // Check Redis cache for user data
+  const userCacheKey = RedisService.keys.userData(req.userId);
+  let user: any = await RedisService.getJSON(userCacheKey);
+  
+  if (!user) {
+    user = await DB.findUserById(req.userId);
+    if (user) {
+      await RedisService.setJSON(userCacheKey, user, RedisService.TTL.USER_DATA);
+    }
+  }
+  
+  if (!user || user?.subscription?.tier !== 'premium' || user?.subscription?.status !== 'active') {
     res.status(403).json({ 
       success: false, 
       message: 'Premium subscription required',
@@ -88,30 +112,52 @@ export const requirePremium = (req: AuthenticatedRequest, res: Response, next: N
 };
 
 export const rateLimitByUser = (maxRequests: number, windowMs: number) => {
-  const requests = new Map<string, { count: number; resetTime: number }>();
-
-  return (req: AuthenticatedRequest, res: Response, next: NextFunction): void => {
+  return async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
     const userId = req.userId || req.ip || 'anonymous';
-    const now = Date.now();
-    const userRequests = requests.get(userId);
-
-    if (!userRequests || userRequests.resetTime <= now) {
-      requests.set(userId || 'anonymous', { count: 1, resetTime: now + windowMs });
+    const endpoint = req.originalUrl || req.url;
+    const rateLimitKey = RedisService.keys.rateLimit(userId, endpoint);
+    
+    // Try Redis first, fallback to memory if Redis is not available
+    if (RedisService.isAvailable()) {
+      const current = await RedisService.get(rateLimitKey);
+      const count = current ? parseInt(current) : 0;
+      
+      if (count >= maxRequests) {
+        const ttl = await RedisService.client?.ttl(rateLimitKey) || 0;
+        res.status(429).json({
+          success: false,
+          message: `Rate limit exceeded. Try again in ${ttl} seconds.`,
+          retryAfter: ttl
+        });
+        return;
+      }
+      
+      await RedisService.set(rateLimitKey, (count + 1).toString(), Math.ceil(windowMs / 1000));
       next();
-      return;
-    }
+    } else {
+      // Fallback to in-memory rate limiting
+      const requests = new Map<string, { count: number; resetTime: number }>();
+      const now = Date.now();
+      const userRequests = requests.get(userId);
 
-    if (userRequests.count >= maxRequests) {
-      const resetTime = Math.ceil((userRequests.resetTime - now) / 1000);
-      res.status(429).json({
-        success: false,
-        message: `Rate limit exceeded. Try again in ${resetTime} seconds.`,
-        retryAfter: resetTime
-      });
-      return;
-    }
+      if (!userRequests || userRequests.resetTime <= now) {
+        requests.set(userId, { count: 1, resetTime: now + windowMs });
+        next();
+        return;
+      }
 
-    userRequests.count++;
-    next();
+      if (userRequests.count >= maxRequests) {
+        const resetTime = Math.ceil((userRequests.resetTime - now) / 1000);
+        res.status(429).json({
+          success: false,
+          message: `Rate limit exceeded. Try again in ${resetTime} seconds.`,
+          retryAfter: resetTime
+        });
+        return;
+      }
+
+      userRequests.count++;
+      next();
+    }
   };
 };

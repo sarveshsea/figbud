@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { UserProfile } from '../types';
+import { storage } from '../utils/storage';
 
 interface PremiumViewProps {
   user: UserProfile | null;
@@ -59,7 +60,7 @@ export const PremiumView: React.FC<PremiumViewProps> = ({ user, onBack }) => {
     setLoading(true);
 
     try {
-      const token = localStorage.getItem('figbud_token');
+      const token = storage.getItem('figbud_token');
       const response = await fetch('/api/subscription/create-checkout', {
         method: 'POST',
         headers: {

@@ -1,0 +1,79 @@
+/* Once UI Theme Configuration for FigBud - Minimal Gray */
+.once-ui-root {
+  /* Brand colors */
+  --brand: #5B5B5B;
+  --accent: #7A7A7A;
+  
+  /* Minimal surfaces */
+  --surface: rgba(255, 255, 255, 0.02);
+  --surface-hover: rgba(255, 255, 255, 0.04);
+  --surface-active: rgba(255, 255, 255, 0.06);
+  --on-surface: rgba(255, 255, 255, 0.8);
+  
+  /* Background */
+  --background: #1a1a1a;
+  --on-background: rgba(255, 255, 255, 0.85);
+  
+  /* Glass effects - subtle */
+  --glass-blur: 8px;
+  --glass-saturation: 100%;
+  --border-glass: rgba(255, 255, 255, 0.05);
+  
+  /* Status colors */
+  --success: #10B981;
+  --warning: #F59E0B;
+  --danger: #EF4444;
+  --info: #3B82F6;
+  
+  /* Spacing */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  
+  /* Radius */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-full: 9999px;
+  
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition-base: 250ms ease;
+  --transition-slow: 350ms ease;
+  
+  /* Typography */
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: var(--on-background);
+  background: var(--background);
+  
+  width: 100%;
+  height: 100%;
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturation));
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturation));
+}
+
+/* Minimal components */
+.glass-card {
+  background: var(--surface);
+  border: 1px solid var(--border-glass);
+  box-shadow: none;
+}
+
+.glass-input {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.glass-button {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  transition: all var(--transition-base);
+}
+
+.glass-button:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.08);
+}

@@ -29,4 +29,10 @@ router.post('/guidance',
   ChatController.getGuidance
 );
 
+router.post('/analyze', 
+  optionalAuth,
+  rateLimitByUser(10, 60000), // 10 requests per minute
+  ChatController.analyzeDesign
+);
+
 export default router;
