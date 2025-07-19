@@ -60,30 +60,23 @@ export const PremiumView: React.FC<PremiumViewProps> = ({ user, onBack }) => {
     setLoading(true);
 
     try {
-      const token = storage.getItem('figbud_token');
-      const response = await fetch('/api/subscription/create-checkout', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': token ? `Bearer ${token}` : '',
-        },
-        body: JSON.stringify({
-          plan: selectedPlan,
-          successUrl: window.location.origin + '/success',
-          cancelUrl: window.location.origin + '/cancel',
-        }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        // Redirect to Stripe Checkout
-        window.open(data.checkoutUrl, '_blank');
-      } else {
-        throw new Error('Failed to create checkout session');
-      }
+      // TODO: Implement premium upgrade flow
+      console.log('Upgrade to', selectedPlan);
+      
+      // For now, just show a notification
+      parent.postMessage({
+        pluginMessage: {
+          type: 'notify',
+          message: '✨ Premium features coming soon! Stay tuned for updates.'
+        }
+      }, '*');
+      
+      // You could also show a contact form or email link
+      window.open('mailto:support@figbud.ai?subject=Premium%20Upgrade%20Request', '_blank');
+      
     } catch (error) {
       console.error('Upgrade error:', error);
-      alert('Failed to start upgrade process. Please try again.');
+      alert('Premium upgrades coming soon!');
     } finally {
       setLoading(false);
     }
@@ -121,15 +114,15 @@ export const PremiumView: React.FC<PremiumViewProps> = ({ user, onBack }) => {
 
           <div className="subscription-management">
             <h4>Manage Subscription</h4>
-            <p>Need to update your billing or cancel your subscription?</p>
+            <p>Need help with your subscription?</p>
             <button 
               className="figma-button secondary"
               onClick={() => {
-                // Open Stripe customer portal
-                window.open('/api/subscription/portal', '_blank');
+                // Open email support
+                window.open('mailto:support@figbud.ai?subject=Premium%20Subscription%20Help', '_blank');
               }}
             >
-              Manage Billing
+              Contact Support
             </button>
           </div>
         </div>

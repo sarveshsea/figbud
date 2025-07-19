@@ -16,8 +16,7 @@ export interface User {
 
 export interface UserSubscription {
   tier: 'free' | 'premium';
-  stripeCustomerId?: string;
-  stripeSubscriptionId?: string;
+  // Payment processing to be implemented in future updates
   currentPeriodStart?: Date;
   currentPeriodEnd?: Date;
   cancelAtPeriodEnd: boolean;

@@ -39,8 +39,6 @@ export const SupabaseDatabase: DatabaseInterface = {
         passwordResetExpires: user.password_reset_expires ? new Date(user.password_reset_expires) : null,
         subscription: user.user_subscriptions?.[0] ? {
           tier: user.user_subscriptions[0].tier,
-          stripeCustomerId: user.user_subscriptions[0].stripe_customer_id,
-          stripeSubscriptionId: user.user_subscriptions[0].stripe_subscription_id,
           currentPeriodStart: user.user_subscriptions[0].current_period_start ? new Date(user.user_subscriptions[0].current_period_start) : null,
           currentPeriodEnd: user.user_subscriptions[0].current_period_end ? new Date(user.user_subscriptions[0].current_period_end) : null,
           cancelAtPeriodEnd: user.user_subscriptions[0].cancel_at_period_end,
@@ -217,9 +215,7 @@ export const SupabaseDatabase: DatabaseInterface = {
           .from('user_subscriptions')
           .update({
             tier: updates.subscription.tier,
-            status: updates.subscription.status,
-            stripe_customer_id: updates.subscription.stripeCustomerId,
-            stripe_subscription_id: updates.subscription.stripeSubscriptionId
+            status: updates.subscription.status
           })
           .eq('user_id', id);
 

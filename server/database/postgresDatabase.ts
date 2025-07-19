@@ -432,8 +432,6 @@ export class PostgresDatabase {
       passwordResetExpires: row.password_reset_expires,
       subscription: {
         tier: row.tier || 'free',
-        stripeCustomerId: row.stripe_customer_id,
-        stripeSubscriptionId: row.stripe_subscription_id,
         currentPeriodStart: row.current_period_start,
         currentPeriodEnd: row.current_period_end,
         cancelAtPeriodEnd: row.cancel_at_period_end || false,
