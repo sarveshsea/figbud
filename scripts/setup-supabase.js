@@ -1,8 +1,15 @@
 const { createClient } = require('@supabase/supabase-js');
+require('dotenv').config({ path: '../.env' });
 
-const supabaseUrl = 'https://faummrgmlwhfehylhfvx.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZhdW1tcmdtbHdoZmVoeWxoZnZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI4ODU1MTMsImV4cCI6MjA2ODQ2MTUxM30.gQ8FKw9-ZGi2Ic0Uqt_1nGhCXGhMb44HADRpFK5N9JE';
-const serviceRoleKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZhdW1tcmdtbHdoZmVoeWxoZnZ4Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1Mjg4NTUxMywiZXhwIjoyMDY4NDYxNTEzfQ.F1y74XY0bCW1Bqh0YFRE-gRoMRCvFB3BzP7B4GQD_mE';
+// Load from environment variables - NEVER hardcode keys!
+const supabaseUrl = process.env.SUPABASE_URL;
+const serviceRoleKey = process.env.SUPABASE_SERVICE_KEY;
+
+if (!supabaseUrl || !serviceRoleKey) {
+  console.error('❌ Error: Missing Supabase environment variables!');
+  console.error('Please ensure SUPABASE_URL and SUPABASE_SERVICE_KEY are set in your .env file');
+  process.exit(1);
+}
 
 // Use service role for admin operations
 const supabase = createClient(supabaseUrl, serviceRoleKey);
