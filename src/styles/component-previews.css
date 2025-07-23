@@ -1,0 +1,726 @@
+/* Component Preview Styles - Real Design System Components */
+@import './theme-variables.css';
+
+/* ===== BUTTON COMPONENTS ===== */
+.preview-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  min-height: 40px;
+  white-space: nowrap;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Button Variants */
+.preview-button.default {
+  background: var(--figbud-primary);
+  color: white;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.preview-button.default:hover {
+  background: var(--figbud-primary-hover);
+  /* Removed transform and excessive shadow */
+}
+
+.preview-button.secondary {
+  background: var(--figbud-bg-tertiary);
+  color: var(--figbud-text-primary);
+  border: 1px solid var(--figbud-border);
+}
+
+.preview-button.secondary:hover {
+  background: var(--figbud-bg-hover);
+  border-color: var(--figbud-border-hover);
+}
+
+.preview-button.destructive {
+  background: var(--figbud-danger);
+  color: white;
+}
+
+.preview-button.destructive:hover {
+  background: var(--figbud-danger-hover);
+  /* Removed transform and excessive shadow */
+}
+
+.preview-button.outline {
+  background: transparent;
+  border: 1px solid var(--figbud-border);
+  color: var(--figbud-text-primary);
+}
+
+.preview-button.outline:hover {
+  background: var(--figbud-bg-hover);
+  border-color: var(--figbud-primary);
+  color: var(--figbud-primary);
+}
+
+.preview-button.ghost {
+  background: transparent;
+  color: var(--figbud-text-primary);
+}
+
+.preview-button.ghost:hover {
+  background: var(--figbud-bg-hover);
+}
+
+.preview-button.link {
+  background: transparent;
+  color: var(--figbud-primary);
+  text-decoration: underline;
+  padding: 0;
+  min-height: auto;
+}
+
+.preview-button.link:hover {
+  color: var(--figbud-primary-hover);
+  text-decoration: none;
+}
+
+/* Button Sizes */
+.preview-button.sm {
+  padding: 6px 12px;
+  font-size: 12px;
+  min-height: 32px;
+}
+
+.preview-button.lg {
+  padding: 12px 28px;
+  font-size: 16px;
+  min-height: 48px;
+}
+
+.preview-button.icon {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+}
+
+/* Disabled State */
+.preview-button:disabled,
+.preview-button.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* ===== CARD COMPONENTS ===== */
+.preview-card {
+  background: var(--figbud-card-bg);
+  border: 1px solid var(--figbud-border);
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.preview-card:hover {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+  transform: translateY(-2px);
+}
+
+.preview-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.preview-card-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--figbud-text-primary);
+  margin: 0;
+}
+
+.preview-card-description {
+  font-size: 14px;
+  color: var(--figbud-text-secondary);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.preview-card-content {
+  flex: 1;
+  background: var(--figbud-bg-primary);
+  border-radius: 4px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--figbud-text-tertiary);
+  font-size: 12px;
+}
+
+.preview-card-footer {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--figbud-border);
+}
+
+/* ===== INPUT COMPONENTS ===== */
+.preview-input-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  max-width: 320px;
+}
+
+.preview-input-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--figbud-text-secondary);
+}
+
+.preview-input {
+  padding: 10px 12px;
+  border: 1px solid var(--figbud-input-border);
+  border-radius: 6px;
+  font-size: 14px;
+  background: var(--figbud-input-bg);
+  color: var(--figbud-text-primary);
+  transition: all 0.2s;
+  min-height: 40px;
+  width: 100%;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.preview-input::placeholder {
+  color: var(--figbud-text-tertiary);
+}
+
+.preview-input:hover {
+  border-color: var(--figbud-border-hover);
+  background: var(--figbud-input-hover);
+}
+
+.preview-input:focus {
+  outline: none;
+  border-color: var(--figbud-border-focus);
+  background: var(--figbud-input-hover);
+  box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+}
+
+.preview-input:disabled {
+  background: var(--figbud-bg-tertiary);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Input Sizes */
+.preview-input.sm {
+  padding: 6px 10px;
+  font-size: 12px;
+  min-height: 32px;
+}
+
+.preview-input.lg {
+  padding: 12px 16px;
+  font-size: 16px;
+  min-height: 48px;
+}
+
+/* ===== BADGE COMPONENTS ===== */
+.preview-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
+  transition: all 0.2s;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* Badge Variants */
+.preview-badge.default {
+  background: var(--figbud-primary);
+  color: white;
+}
+
+.preview-badge.secondary {
+  background: var(--figbud-bg-tertiary);
+  color: var(--figbud-text-primary);
+  border: 1px solid var(--figbud-border);
+}
+
+.preview-badge.destructive {
+  background: var(--figbud-danger);
+  color: white;
+}
+
+.preview-badge.outline {
+  background: transparent;
+  border: 1px solid var(--figbud-border);
+  color: var(--figbud-text-primary);
+}
+
+.preview-badge.success {
+  background: var(--figbud-success);
+  color: white;
+}
+
+.preview-badge.warning {
+  background: var(--figbud-warning);
+  color: white;
+}
+
+/* Badge Sizes */
+.preview-badge.sm {
+  padding: 3px 8px;
+  font-size: 10px;
+}
+
+.preview-badge.lg {
+  padding: 8px 18px;
+  font-size: 14px;
+}
+
+/* ===== SWITCH/TOGGLE COMPONENTS ===== */
+.preview-switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+  min-width: 44px;
+  min-height: 24px;
+}
+
+.preview-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.preview-switch-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--figbud-bg-tertiary);
+  transition: 0.3s;
+  border-radius: 24px;
+  border: 1px solid var(--figbud-border);
+}
+
+.preview-switch-slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 2px;
+  bottom: 2px;
+  background-color: white;
+  transition: 0.3s;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.preview-switch input:checked + .preview-switch-slider {
+  background-color: var(--figbud-primary);
+  border-color: var(--figbud-primary);
+}
+
+.preview-switch input:checked + .preview-switch-slider:before {
+  transform: translateX(20px);
+}
+
+.preview-switch input:disabled + .preview-switch-slider {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ===== CHECKBOX COMPONENTS ===== */
+.preview-checkbox-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.preview-checkbox {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--figbud-border);
+  border-radius: 4px;
+  background: var(--figbud-input-bg);
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.preview-checkbox.checked {
+  background: var(--figbud-primary);
+  border-color: var(--figbud-primary);
+}
+
+.preview-checkbox-checkmark {
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+  opacity: 0;
+  transform: scale(0);
+  transition: all 0.2s;
+}
+
+.preview-checkbox.checked .preview-checkbox-checkmark {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.preview-checkbox-label {
+  font-size: 14px;
+  color: var(--figbud-text-primary);
+}
+
+.preview-checkbox-container:hover .preview-checkbox {
+  border-color: var(--figbud-primary);
+}
+
+/* ===== SELECT/DROPDOWN COMPONENTS ===== */
+.preview-select {
+  position: relative;
+  width: 100%;
+  max-width: 320px;
+}
+
+.preview-select-trigger {
+  width: 100%;
+  padding: 10px 40px 10px 12px;
+  border: 1px solid var(--figbud-input-border);
+  border-radius: 6px;
+  font-size: 14px;
+  background: var(--figbud-input-bg);
+  color: var(--figbud-text-primary);
+  cursor: pointer;
+  transition: all 0.2s;
+  min-height: 40px;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.preview-select-arrow {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--figbud-text-tertiary);
+  pointer-events: none;
+  transition: transform 0.2s;
+}
+
+.preview-select.open .preview-select-arrow {
+  transform: translateY(-50%) rotate(180deg);
+}
+
+.preview-select-trigger:hover {
+  border-color: var(--figbud-border-hover);
+  background: var(--figbud-input-hover);
+}
+
+.preview-select-trigger:focus {
+  outline: none;
+  border-color: var(--figbud-border-focus);
+  box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+}
+
+/* ===== AVATAR COMPONENTS ===== */
+.preview-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--figbud-primary);
+  color: white;
+  font-weight: 500;
+  font-size: 16px;
+  overflow: hidden;
+  border: 2px solid var(--figbud-border);
+  transition: all 0.2s;
+}
+
+.preview-avatar.sm {
+  width: 32px;
+  height: 32px;
+  font-size: 14px;
+}
+
+.preview-avatar.lg {
+  width: 48px;
+  height: 48px;
+  font-size: 20px;
+}
+
+.preview-avatar-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.preview-avatar:hover {
+  transform: scale(1.05);
+  border-color: var(--figbud-primary);
+}
+
+/* ===== ALERT COMPONENTS ===== */
+.preview-alert {
+  padding: 16px;
+  border-radius: 6px;
+  border: 1px solid;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  font-size: 14px;
+  line-height: 1.5;
+  width: 100%;
+  max-width: 480px;
+}
+
+.preview-alert.default {
+  background: var(--figbud-bg-secondary);
+  border-color: var(--figbud-border);
+  color: var(--figbud-text-primary);
+}
+
+.preview-alert.info {
+  background: rgba(33, 150, 243, 0.1);
+  border-color: var(--figbud-primary);
+  color: var(--figbud-text-primary);
+}
+
+.preview-alert.success {
+  background: rgba(76, 175, 80, 0.1);
+  border-color: var(--figbud-success);
+  color: var(--figbud-text-primary);
+}
+
+.preview-alert.warning {
+  background: rgba(255, 152, 0, 0.1);
+  border-color: var(--figbud-warning);
+  color: var(--figbud-text-primary);
+}
+
+.preview-alert.error {
+  background: rgba(244, 67, 54, 0.1);
+  border-color: var(--figbud-danger);
+  color: var(--figbud-text-primary);
+}
+
+.preview-alert-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.preview-alert-content {
+  flex: 1;
+}
+
+.preview-alert-title {
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.preview-alert-description {
+  color: var(--figbud-text-secondary);
+}
+
+/* ===== SKELETON LOADER ===== */
+.preview-skeleton {
+  background: var(--figbud-bg-tertiary);
+  border-radius: 4px;
+}
+
+.preview-skeleton.text {
+  height: 16px;
+  width: 100%;
+  max-width: 200px;
+}
+
+.preview-skeleton.title {
+  height: 24px;
+  width: 100%;
+  max-width: 300px;
+}
+
+.preview-skeleton.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+
+.preview-skeleton.button {
+  width: 120px;
+  height: 40px;
+  border-radius: 6px;
+}
+
+.preview-skeleton.card {
+  width: 100%;
+  height: 120px;
+  border-radius: 8px;
+}
+
+/* Removed skeleton loading animation */
+
+/* ===== PROGRESS BAR ===== */
+.preview-progress {
+  width: 100%;
+  max-width: 320px;
+}
+
+.preview-progress-bar {
+  height: 8px;
+  background: var(--figbud-bg-tertiary);
+  border-radius: 999px;
+  overflow: hidden;
+  position: relative;
+}
+
+.preview-progress-fill {
+  height: 100%;
+  background: var(--figbud-primary);
+  border-radius: 999px;
+  transition: width 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.preview-progress-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* Removed progress shine animation */
+
+/* ===== TABS COMPONENT ===== */
+.preview-tabs {
+  width: 100%;
+  max-width: 480px;
+}
+
+.preview-tabs-list {
+  display: flex;
+  border-bottom: 1px solid var(--figbud-border);
+  gap: 4px;
+}
+
+.preview-tab {
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--figbud-text-secondary);
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.preview-tab:hover {
+  color: var(--figbud-text-primary);
+  background: var(--figbud-bg-hover);
+}
+
+.preview-tab.active {
+  color: var(--figbud-primary);
+  border-bottom-color: var(--figbud-primary);
+}
+
+.preview-tabs-content {
+  padding: 24px 0;
+  color: var(--figbud-text-secondary);
+  font-size: 14px;
+}
+
+/* ===== TOOLTIP PREVIEW ===== */
+.preview-tooltip-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.preview-tooltip {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(-8px);
+  background: var(--figbud-bg-secondary);
+  color: var(--figbud-text-primary);
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+  border: 1px solid var(--figbud-border);
+  pointer-events: none;
+}
+
+.preview-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 4px solid transparent;
+  border-top-color: var(--figbud-bg-secondary);
+}
+
+/* ===== DEFAULT COMPONENT FALLBACK ===== */
+.preview-default {
+  padding: 32px;
+  background: var(--figbud-bg-tertiary);
+  border-radius: 8px;
+  font-size: 14px;
+  color: var(--figbud-text-secondary);
+  text-align: center;
+  border: 1px dashed var(--figbud-border);
+  min-height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ===== ANIMATION UTILITIES ===== */
+.fade-in {
+  /* Removed fade-in animation */
+}
+
+/* Removed fade-in animation */
+
+.pulse {
+  /* Removed pulse animation */
+}
+
+/* Removed pulse animation */

@@ -1,163 +1,118 @@
 import express from 'express';
 import cors from 'cors';
-import helmet from 'helmet';
-import dotenv from 'dotenv';
-import { join } from 'path';
-
-// Import routes
-import authRoutes from './routes/auth';
+import { config } from 'dotenv';
 import chatRoutes from './routes/chat';
+import chatStreamRoutes from './routes/chat-stream';
 
-// Import database and cache initialization
-import { initializeDatabase } from './config/databaseConfig';
-import { RedisService } from './services/redis';
+config();
 
-// Load environment variables
-dotenv.config();
+// Validate environment variables
+function validateEnvironment() {
+  const required: string[] = [
+    'SUPABASE_URL',
+    'SUPABASE_SERVICE_KEY',
+    'JWT_SECRET',
+    'JWT_REFRESH_SECRET'
+  ];
+  
+  const optional: string[] = [
+    'OPENROUTER_API_KEY',
+    'DEEPSEEK_API_KEY',
+    'YOUTUBE_API_KEY',
+    'FIRECRAWL_API_KEY',
+    'ASSEMBLYAI_API_KEY',
+    'FIGMA_API_KEY',
+    'GITHUB_TOKEN'
+  ];
+  
+  const missing: string[] = [];
+  const warnings: string[] = [];
+  
+  // Check required variables
+  for (const varName of required) {
+    if (!process.env[varName]) {
+      missing.push(varName);
+    }
+  }
+  
+  // Check optional variables
+  for (const varName of optional) {
+    if (!process.env[varName]) {
+      warnings.push(varName);
+    }
+  }
+  
+  // Validate Supabase URL format
+  if (process.env.SUPABASE_URL && !process.env.SUPABASE_URL.startsWith('https://')) {
+    console.error('❌ SUPABASE_URL must start with https://');
+    process.exit(1);
+  }
+  
+  // If any required variables are missing, exit
+  if (missing.length > 0) {
+    console.error('❌ Missing required environment variables:');
+    missing.forEach(varName => {
+      console.error(`   - ${varName}`);
+    });
+    console.error('\n📄 Please check .env.example for configuration details');
+    process.exit(1);
+  }
+  
+  // Show warnings for optional variables
+  if (warnings.length > 0) {
+    console.warn('⚠️  Missing optional environment variables:');
+    warnings.forEach(varName => {
+      console.warn(`   - ${varName}`);
+    });
+    console.warn('   Some features may be limited. Users can provide their own API keys.\n');
+  }
+  
+  console.log('✅ Environment variables validated');
+}
+
+// Validate environment before starting
+validateEnvironment();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Security middleware
-app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'"],
-      scriptSrc: ["'self'"],
-      imgSrc: ["'self'", "data:", "https:"],
-      connectSrc: ["'self'", "https://api.openai.com", "https://www.googleapis.com", "https://api.assemblyai.com"],
-    },
-  },
-}));
-
-// CORS configuration
+// Middleware - Allow all origins for Figma plugin
 app.use(cors({
-  origin: [
-    'https://figma.com',
-    'https://www.figma.com',
-    'http://localhost:8080', // For development
-    'http://localhost:3001', // For plugin UI development
-    'file://', // For local Figma plugin development
-    '*' // Allow all origins for development - restrict in production
-  ],
+  origin: true, // Allow all origins including file:// and Figma's internal URLs
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  allowedHeaders: [
+    'Content-Type', 
+    'Authorization',
+    'X-OpenRouter-Key',
+    'X-DeepSeek-Key',
+    'X-YouTube-Key',
+    'X-Firecrawl-Key'
+  ]
 }));
+app.use(express.json());
 
-// Body parsing middleware
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true }));
-
-// Request logging middleware
-app.use((req, res, next) => {
-  console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
-  next();
-});
-
-// Health check endpoint
-app.get('/health', (req, res) => {
-  res.json({
-    status: 'ok',
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
-    environment: process.env.NODE_ENV || 'development'
-  });
-});
-
-// API routes
-app.use('/api/auth', authRoutes);
+// Routes
 app.use('/api/chat', chatRoutes);
+app.use('/api/chat', chatStreamRoutes);
 
-// Serve static files in production
-if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(join(__dirname, '../dist')));
-  
-  // Serve widget files
-  app.get('/manifest.json', (req, res) => {
-    res.sendFile(join(__dirname, '../manifest.json'));
-  });
-  
-  app.get('/code.js', (req, res) => {
-    res.sendFile(join(__dirname, '../dist/code.js'));
-  });
-  
-  app.get('/ui.html', (req, res) => {
-    res.sendFile(join(__dirname, '../dist/ui.html'));
-  });
-}
+// Health check
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
 
-// Error handling middleware
-app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error('Unhandled error:', err);
+// Cache statistics endpoint
+app.get('/api/cache/stats', (req, res) => {
+  const { aiResponseCache, tutorialCache } = require('./services/memory-cache');
   
-  res.status(err.status || 500).json({
-    success: false,
-    message: process.env.NODE_ENV === 'production' ? 'Internal server error' : err.message,
-    ...(process.env.NODE_ENV !== 'production' && { stack: err.stack })
+  res.json({
+    aiResponses: aiResponseCache.getStats(),
+    tutorials: tutorialCache.getStats(),
+    timestamp: new Date().toISOString()
   });
 });
 
-// 404 handler
-app.use((req, res) => {
-  res.status(404).json({
-    success: false,
-    message: 'Endpoint not found'
-  });
+// Start server
+app.listen(PORT, () => {
+  console.log(`🚀 FigBud server running on port ${PORT}`);
 });
-
-// Graceful shutdown
-process.on('SIGTERM', () => {
-  console.log('SIGTERM received. Shutting down gracefully...');
-  process.exit(0);
-});
-
-process.on('SIGINT', () => {
-  console.log('SIGINT received. Shutting down gracefully...');
-  process.exit(0);
-});
-
-// Initialize database and start server
-const startServer = async () => {
-  try {
-    // Initialize database
-    await initializeDatabase();
-    
-    // Initialize Redis cache
-    await RedisService.initialize();
-    
-    // Start server
-    app.listen(PORT, () => {
-      console.log(`
-🚀 FigBud Server is running!
-   
-📍 Port: ${PORT}
-🌍 Environment: ${process.env.NODE_ENV || 'development'}
-🕒 Started at: ${new Date().toISOString()}
-
-📚 API Endpoints:
-   GET  /health              - Health check
-   POST /api/auth/register   - User registration
-   POST /api/auth/login      - User login
-   POST /api/chat/message    - Process chat messages
-   GET  /api/chat/tutorials  - Search tutorials
-   POST /api/chat/analyze    - Analyze design
-   
-🔗 Widget files:
-   GET  /manifest.json       - Figma widget manifest
-   GET  /code.js            - Widget code
-   GET  /ui.html            - Widget UI
-   
-💾 Database: ${process.env.DATABASE_URL ? 'PostgreSQL' : 'File-based'}
-  `);
-    });
-  } catch (error) {
-    console.error('Failed to start server:', error);
-    process.exit(1);
-  }
-};
-
-startServer();
-
-export default app;

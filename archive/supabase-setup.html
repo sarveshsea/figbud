@@ -1,0 +1,674 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>FigBud Supabase Setup</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+    .container { max-width: 1200px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    h1 { color: #333; }
+    .step { margin: 20px 0; padding: 15px; background: #f8f9fa; border-left: 4px solid #007bff; }
+    .sql-box { background: #1e1e1e; color: #d4d4d4; padding: 20px; border-radius: 4px; overflow-x: auto; font-family: 'Courier New', monospace; font-size: 14px; }
+    button { background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-size: 16px; }
+    button:hover { background: #0056b3; }
+    .success { color: #28a745; }
+    .warning { color: #ffc107; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🚀 FigBud Supabase Setup</h1>
+    
+    <div class="step">
+      <h2>Step 1: Copy the SQL</h2>
+      <p>Click the button below to copy all the SQL commands:</p>
+      <button onclick="copySQL()">📋 Copy SQL to Clipboard</button>
+      <span id="copyStatus"></span>
+    </div>
+    
+    <div class="step">
+      <h2>Step 2: Open Supabase SQL Editor</h2>
+      <p>Click this link to open your Supabase SQL Editor:</p>
+      <a href="https://supabase.com/dashboard/project/faummrgmlwhfehylhfvx/sql/new" target="_blank">
+        <button>🔗 Open Supabase SQL Editor</button>
+      </a>
+    </div>
+    
+    <div class="step">
+      <h2>Step 3: Paste and Run</h2>
+      <ol>
+        <li>Paste the SQL in the editor (Cmd+V or Ctrl+V)</li>
+        <li>Click "Run" or press Cmd+Enter</li>
+        <li>You should see "Success" messages</li>
+      </ol>
+    </div>
+    
+    <div class="step">
+      <h2>What This Creates:</h2>
+      <ul>
+        <li>✅ 6 tables: users, chat_sessions, chat_conversations, chat_messages, intent_analysis, figma_components</li>
+        <li>✅ Stored functions for session management</li>
+        <li>✅ Row Level Security policies</li>
+        <li>✅ Sample data for testing</li>
+      </ul>
+    </div>
+    
+    <details>
+      <summary><h3>View SQL Commands</h3></summary>
+      <div class="sql-box">
+        <pre id="sqlContent">-- FigBud Complete Database Setup
+-- Run this entire script in Supabase SQL Editor
+
+-- Enable required extensions
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+
+-- Create users table (if using Supabase Auth, this extends auth.users)
+CREATE TABLE IF NOT EXISTS users (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  email TEXT UNIQUE NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create chat sessions table
+CREATE TABLE IF NOT EXISTS chat_sessions (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  widget_session_id TEXT NOT NULL UNIQUE,
+  is_anonymous BOOLEAN DEFAULT false,
+  started_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  last_activity TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  ended_at TIMESTAMP WITH TIME ZONE,
+  metadata JSONB DEFAULT '{}'
+);
+
+-- Create indexes for chat_sessions
+CREATE INDEX idx_chat_sessions_ended_at ON chat_sessions(ended_at);
+CREATE INDEX idx_chat_sessions_user_id ON chat_sessions(user_id);
+CREATE INDEX idx_chat_sessions_widget_id ON chat_sessions(widget_session_id);
+
+-- Create chat conversations table
+CREATE TABLE IF NOT EXISTS chat_conversations (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  widget_session_id TEXT NOT NULL,
+  session_id UUID REFERENCES chat_sessions(id) ON DELETE CASCADE,
+  is_active BOOLEAN DEFAULT true,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  ended_at TIMESTAMP WITH TIME ZONE
+);
+
+-- Create indexes for chat_conversations
+CREATE INDEX idx_chat_conversations_user_id ON chat_conversations(user_id);
+CREATE INDEX idx_chat_conversations_session_id ON chat_conversations(session_id);
+CREATE INDEX idx_chat_conversations_widget_id ON chat_conversations(widget_session_id);
+
+-- Create chat messages table
+CREATE TABLE IF NOT EXISTS chat_messages (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  conversation_id UUID REFERENCES chat_conversations(id) ON DELETE CASCADE,
+  role TEXT NOT NULL CHECK (role IN ('user', 'assistant', 'system')),
+  content TEXT NOT NULL,
+  metadata JSONB DEFAULT '{}',
+  intent JSONB,
+  components JSONB,
+  tutorials JSONB,
+  provider TEXT,
+  model TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create index for chat_messages
+CREATE INDEX idx_chat_messages_conversation_id ON chat_messages(conversation_id);
+
+-- Create intent analysis table
+CREATE TABLE IF NOT EXISTS intent_analysis (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+  session_id UUID REFERENCES chat_sessions(id) ON DELETE CASCADE,
+  conversation_id UUID REFERENCES chat_conversations(id) ON DELETE CASCADE,
+  message TEXT NOT NULL,
+  detected_action VARCHAR(50),
+  component_types TEXT[] DEFAULT '{}',
+  keywords TEXT[] DEFAULT '{}',
+  tutorial_requests TEXT[] DEFAULT '{}',
+  is_question BOOLEAN DEFAULT false,
+  needs_guidance BOOLEAN DEFAULT false,
+  confidence DECIMAL(3,2) DEFAULT 0.00,
+  response_time_ms INTEGER,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create indexes for intent_analysis
+CREATE INDEX idx_intent_analysis_user_id ON intent_analysis(user_id);
+CREATE INDEX idx_intent_analysis_session_id ON intent_analysis(session_id);
+CREATE INDEX idx_intent_analysis_conversation_id ON intent_analysis(conversation_id);
+CREATE INDEX idx_intent_analysis_created_at ON intent_analysis(created_at);
+
+-- Create figma_components table (for component library)
+CREATE TABLE IF NOT EXISTS figma_components (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  type VARCHAR(100) NOT NULL,
+  category VARCHAR(50),
+  description TEXT,
+  thumbnail_url TEXT,
+  figma_properties JSONB NOT NULL DEFAULT '{}',
+  usage_count INTEGER DEFAULT 0,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create index for figma_components
+CREATE INDEX idx_figma_components_type ON figma_components(type);
+
+-- Function to create a new chat session
+CREATE OR REPLACE FUNCTION create_chat_session(
+  p_user_id UUID,
+  p_widget_session_id TEXT,
+  p_metadata JSONB DEFAULT '{}'
+) RETURNS UUID AS $$
+DECLARE
+  v_session_id UUID;
+  v_is_anonymous BOOLEAN;
+BEGIN
+  -- Check if user_id is provided
+  v_is_anonymous := p_user_id IS NULL;
+  
+  -- Create the session
+  INSERT INTO chat_sessions (user_id, widget_session_id, is_anonymous, metadata)
+  VALUES (p_user_id, p_widget_session_id, v_is_anonymous, p_metadata)
+  RETURNING id INTO v_session_id;
+  
+  -- Create initial conversation
+  INSERT INTO chat_conversations (user_id, widget_session_id, session_id)
+  VALUES (p_user_id, p_widget_session_id, v_session_id);
+  
+  RETURN v_session_id;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Function to end a chat session
+CREATE OR REPLACE FUNCTION end_chat_session(
+  p_widget_session_id TEXT
+) RETURNS VOID AS $$
+BEGIN
+  -- Update session
+  UPDATE chat_sessions
+  SET ended_at = CURRENT_TIMESTAMP
+  WHERE widget_session_id = p_widget_session_id
+    AND ended_at IS NULL;
+  
+  -- Update conversations
+  UPDATE chat_conversations
+  SET is_active = false,
+      ended_at = CURRENT_TIMESTAMP
+  WHERE widget_session_id = p_widget_session_id
+    AND is_active = true;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Function to store chat message with enriched data
+CREATE OR REPLACE FUNCTION store_chat_message(
+  p_conversation_id UUID,
+  p_role TEXT,
+  p_content TEXT,
+  p_metadata JSONB DEFAULT '{}',
+  p_intent JSONB DEFAULT NULL,
+  p_components JSONB DEFAULT NULL,
+  p_tutorials JSONB DEFAULT NULL,
+  p_provider TEXT DEFAULT NULL,
+  p_model TEXT DEFAULT NULL
+) RETURNS UUID AS $$
+DECLARE
+  v_message_id UUID;
+BEGIN
+  INSERT INTO chat_messages (
+    conversation_id,
+    role,
+    content,
+    metadata,
+    intent,
+    components,
+    tutorials,
+    provider,
+    model
+  )
+  VALUES (
+    p_conversation_id,
+    p_role,
+    p_content,
+    p_metadata,
+    p_intent,
+    p_components,
+    p_tutorials,
+    p_provider,
+    p_model
+  )
+  RETURNING id INTO v_message_id;
+  
+  -- Update session last activity
+  UPDATE chat_sessions
+  SET last_activity = CURRENT_TIMESTAMP
+  WHERE id = (
+    SELECT session_id 
+    FROM chat_conversations 
+    WHERE id = p_conversation_id
+  );
+  
+  RETURN v_message_id;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Function to get user's chat history
+CREATE OR REPLACE FUNCTION get_user_chat_history(
+  p_user_id UUID,
+  p_limit INTEGER DEFAULT 50,
+  p_offset INTEGER DEFAULT 0
+) RETURNS TABLE(
+  conversation_id UUID,
+  session_id UUID,
+  messages JSONB,
+  started_at TIMESTAMP WITH TIME ZONE,
+  ended_at TIMESTAMP WITH TIME ZONE
+) AS $$
+BEGIN
+  RETURN QUERY
+  SELECT 
+    c.id as conversation_id,
+    c.session_id,
+    COALESCE(
+      jsonb_agg(
+        jsonb_build_object(
+          'id', m.id,
+          'role', m.role,
+          'content', m.content,
+          'metadata', m.metadata,
+          'intent', m.intent,
+          'components', m.components,
+          'tutorials', m.tutorials,
+          'created_at', m.created_at
+        ) ORDER BY m.created_at
+      ) FILTER (WHERE m.id IS NOT NULL),
+      '[]'::jsonb
+    ) as messages,
+    c.created_at as started_at,
+    c.ended_at
+  FROM chat_conversations c
+  LEFT JOIN chat_messages m ON m.conversation_id = c.id
+  WHERE c.user_id = p_user_id
+  GROUP BY c.id, c.session_id, c.created_at, c.ended_at
+  ORDER BY c.created_at DESC
+  LIMIT p_limit
+  OFFSET p_offset;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Enable Row Level Security
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE chat_sessions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE chat_conversations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE chat_messages ENABLE ROW LEVEL SECURITY;
+ALTER TABLE intent_analysis ENABLE ROW LEVEL SECURITY;
+ALTER TABLE figma_components ENABLE ROW LEVEL SECURITY;
+
+-- Create RLS policies for anonymous access (for testing)
+-- In production, you should use proper auth policies
+
+-- Allow anonymous insert/select on all tables for testing
+CREATE POLICY "Allow anonymous access" ON users
+  FOR ALL USING (true) WITH CHECK (true);
+
+CREATE POLICY "Allow anonymous access" ON chat_sessions
+  FOR ALL USING (true) WITH CHECK (true);
+
+CREATE POLICY "Allow anonymous access" ON chat_conversations
+  FOR ALL USING (true) WITH CHECK (true);
+
+CREATE POLICY "Allow anonymous access" ON chat_messages
+  FOR ALL USING (true) WITH CHECK (true);
+
+CREATE POLICY "Allow anonymous access" ON intent_analysis
+  FOR ALL USING (true) WITH CHECK (true);
+
+CREATE POLICY "Allow anonymous access" ON figma_components
+  FOR ALL USING (true) WITH CHECK (true);
+
+-- Create some test data
+-- Insert a test user for anonymous sessions
+INSERT INTO users (id, email) 
+VALUES ('00000000-0000-0000-0000-000000000000', 'anonymous@figbud.com')
+ON CONFLICT (email) DO NOTHING;
+
+-- Insert some sample components
+INSERT INTO figma_components (name, type, category, description) VALUES
+  ('Primary Button', 'button', 'form', 'A primary action button with blue background'),
+  ('Secondary Button', 'button', 'form', 'A secondary action button with outline style'),
+  ('Text Input', 'input', 'form', 'Basic text input field'),
+  ('Card Component', 'card', 'layout', 'A container card with shadow'),
+  ('Navigation Bar', 'navbar', 'navigation', 'Top navigation bar component')
+ON CONFLICT DO NOTHING;
+
+-- Verify tables were created
+SELECT table_name 
+FROM information_schema.tables 
+WHERE table_schema = 'public' 
+ORDER BY table_name;</pre>
+      </div>
+    </details>
+  </div>
+  
+  <script>
+    function copySQL() {
+      const sql = `-- FigBud Complete Database Setup
+-- Run this entire script in Supabase SQL Editor
+
+-- Enable required extensions
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+
+-- Create users table (if using Supabase Auth, this extends auth.users)
+CREATE TABLE IF NOT EXISTS users (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  email TEXT UNIQUE NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create chat sessions table
+CREATE TABLE IF NOT EXISTS chat_sessions (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  widget_session_id TEXT NOT NULL UNIQUE,
+  is_anonymous BOOLEAN DEFAULT false,
+  started_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  last_activity TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  ended_at TIMESTAMP WITH TIME ZONE,
+  metadata JSONB DEFAULT '{}'
+);
+
+-- Create indexes for chat_sessions
+CREATE INDEX idx_chat_sessions_ended_at ON chat_sessions(ended_at);
+CREATE INDEX idx_chat_sessions_user_id ON chat_sessions(user_id);
+CREATE INDEX idx_chat_sessions_widget_id ON chat_sessions(widget_session_id);
+
+-- Create chat conversations table
+CREATE TABLE IF NOT EXISTS chat_conversations (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  widget_session_id TEXT NOT NULL,
+  session_id UUID REFERENCES chat_sessions(id) ON DELETE CASCADE,
+  is_active BOOLEAN DEFAULT true,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  ended_at TIMESTAMP WITH TIME ZONE
+);
+
+-- Create indexes for chat_conversations
+CREATE INDEX idx_chat_conversations_user_id ON chat_conversations(user_id);
+CREATE INDEX idx_chat_conversations_session_id ON chat_conversations(session_id);
+CREATE INDEX idx_chat_conversations_widget_id ON chat_conversations(widget_session_id);
+
+-- Create chat messages table
+CREATE TABLE IF NOT EXISTS chat_messages (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  conversation_id UUID REFERENCES chat_conversations(id) ON DELETE CASCADE,
+  role TEXT NOT NULL CHECK (role IN ('user', 'assistant', 'system')),
+  content TEXT NOT NULL,
+  metadata JSONB DEFAULT '{}',
+  intent JSONB,
+  components JSONB,
+  tutorials JSONB,
+  provider TEXT,
+  model TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create index for chat_messages
+CREATE INDEX idx_chat_messages_conversation_id ON chat_messages(conversation_id);
+
+-- Create intent analysis table
+CREATE TABLE IF NOT EXISTS intent_analysis (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+  session_id UUID REFERENCES chat_sessions(id) ON DELETE CASCADE,
+  conversation_id UUID REFERENCES chat_conversations(id) ON DELETE CASCADE,
+  message TEXT NOT NULL,
+  detected_action VARCHAR(50),
+  component_types TEXT[] DEFAULT '{}',
+  keywords TEXT[] DEFAULT '{}',
+  tutorial_requests TEXT[] DEFAULT '{}',
+  is_question BOOLEAN DEFAULT false,
+  needs_guidance BOOLEAN DEFAULT false,
+  confidence DECIMAL(3,2) DEFAULT 0.00,
+  response_time_ms INTEGER,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create indexes for intent_analysis
+CREATE INDEX idx_intent_analysis_user_id ON intent_analysis(user_id);
+CREATE INDEX idx_intent_analysis_session_id ON intent_analysis(session_id);
+CREATE INDEX idx_intent_analysis_conversation_id ON intent_analysis(conversation_id);
+CREATE INDEX idx_intent_analysis_created_at ON intent_analysis(created_at);
+
+-- Create figma_components table (for component library)
+CREATE TABLE IF NOT EXISTS figma_components (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  type VARCHAR(100) NOT NULL,
+  category VARCHAR(50),
+  description TEXT,
+  thumbnail_url TEXT,
+  figma_properties JSONB NOT NULL DEFAULT '{}',
+  usage_count INTEGER DEFAULT 0,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create index for figma_components
+CREATE INDEX idx_figma_components_type ON figma_components(type);
+
+-- Function to create a new chat session
+CREATE OR REPLACE FUNCTION create_chat_session(
+  p_user_id UUID,
+  p_widget_session_id TEXT,
+  p_metadata JSONB DEFAULT '{}'
+) RETURNS UUID AS $$
+DECLARE
+  v_session_id UUID;
+  v_is_anonymous BOOLEAN;
+BEGIN
+  -- Check if user_id is provided
+  v_is_anonymous := p_user_id IS NULL;
+  
+  -- Create the session
+  INSERT INTO chat_sessions (user_id, widget_session_id, is_anonymous, metadata)
+  VALUES (p_user_id, p_widget_session_id, v_is_anonymous, p_metadata)
+  RETURNING id INTO v_session_id;
+  
+  -- Create initial conversation
+  INSERT INTO chat_conversations (user_id, widget_session_id, session_id)
+  VALUES (p_user_id, p_widget_session_id, v_session_id);
+  
+  RETURN v_session_id;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Function to end a chat session
+CREATE OR REPLACE FUNCTION end_chat_session(
+  p_widget_session_id TEXT
+) RETURNS VOID AS $$
+BEGIN
+  -- Update session
+  UPDATE chat_sessions
+  SET ended_at = CURRENT_TIMESTAMP
+  WHERE widget_session_id = p_widget_session_id
+    AND ended_at IS NULL;
+  
+  -- Update conversations
+  UPDATE chat_conversations
+  SET is_active = false,
+      ended_at = CURRENT_TIMESTAMP
+  WHERE widget_session_id = p_widget_session_id
+    AND is_active = true;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Function to store chat message with enriched data
+CREATE OR REPLACE FUNCTION store_chat_message(
+  p_conversation_id UUID,
+  p_role TEXT,
+  p_content TEXT,
+  p_metadata JSONB DEFAULT '{}',
+  p_intent JSONB DEFAULT NULL,
+  p_components JSONB DEFAULT NULL,
+  p_tutorials JSONB DEFAULT NULL,
+  p_provider TEXT DEFAULT NULL,
+  p_model TEXT DEFAULT NULL
+) RETURNS UUID AS $$
+DECLARE
+  v_message_id UUID;
+BEGIN
+  INSERT INTO chat_messages (
+    conversation_id,
+    role,
+    content,
+    metadata,
+    intent,
+    components,
+    tutorials,
+    provider,
+    model
+  )
+  VALUES (
+    p_conversation_id,
+    p_role,
+    p_content,
+    p_metadata,
+    p_intent,
+    p_components,
+    p_tutorials,
+    p_provider,
+    p_model
+  )
+  RETURNING id INTO v_message_id;
+  
+  -- Update session last activity
+  UPDATE chat_sessions
+  SET last_activity = CURRENT_TIMESTAMP
+  WHERE id = (
+    SELECT session_id 
+    FROM chat_conversations 
+    WHERE id = p_conversation_id
+  );
+  
+  RETURN v_message_id;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Function to get user's chat history
+CREATE OR REPLACE FUNCTION get_user_chat_history(
+  p_user_id UUID,
+  p_limit INTEGER DEFAULT 50,
+  p_offset INTEGER DEFAULT 0
+) RETURNS TABLE(
+  conversation_id UUID,
+  session_id UUID,
+  messages JSONB,
+  started_at TIMESTAMP WITH TIME ZONE,
+  ended_at TIMESTAMP WITH TIME ZONE
+) AS $$
+BEGIN
+  RETURN QUERY
+  SELECT 
+    c.id as conversation_id,
+    c.session_id,
+    COALESCE(
+      jsonb_agg(
+        jsonb_build_object(
+          'id', m.id,
+          'role', m.role,
+          'content', m.content,
+          'metadata', m.metadata,
+          'intent', m.intent,
+          'components', m.components,
+          'tutorials', m.tutorials,
+          'created_at', m.created_at
+        ) ORDER BY m.created_at
+      ) FILTER (WHERE m.id IS NOT NULL),
+      '[]'::jsonb
+    ) as messages,
+    c.created_at as started_at,
+    c.ended_at
+  FROM chat_conversations c
+  LEFT JOIN chat_messages m ON m.conversation_id = c.id
+  WHERE c.user_id = p_user_id
+  GROUP BY c.id, c.session_id, c.created_at, c.ended_at
+  ORDER BY c.created_at DESC
+  LIMIT p_limit
+  OFFSET p_offset;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Enable Row Level Security
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE chat_sessions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE chat_conversations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE chat_messages ENABLE ROW LEVEL SECURITY;
+ALTER TABLE intent_analysis ENABLE ROW LEVEL SECURITY;
+ALTER TABLE figma_components ENABLE ROW LEVEL SECURITY;
+
+-- Create RLS policies for anonymous access (for testing)
+-- In production, you should use proper auth policies
+
+-- Allow anonymous insert/select on all tables for testing
+CREATE POLICY "Allow anonymous access" ON users
+  FOR ALL USING (true) WITH CHECK (true);
+
+CREATE POLICY "Allow anonymous access" ON chat_sessions
+  FOR ALL USING (true) WITH CHECK (true);
+
+CREATE POLICY "Allow anonymous access" ON chat_conversations
+  FOR ALL USING (true) WITH CHECK (true);
+
+CREATE POLICY "Allow anonymous access" ON chat_messages
+  FOR ALL USING (true) WITH CHECK (true);
+
+CREATE POLICY "Allow anonymous access" ON intent_analysis
+  FOR ALL USING (true) WITH CHECK (true);
+
+CREATE POLICY "Allow anonymous access" ON figma_components
+  FOR ALL USING (true) WITH CHECK (true);
+
+-- Create some test data
+-- Insert a test user for anonymous sessions
+INSERT INTO users (id, email) 
+VALUES ('00000000-0000-0000-0000-000000000000', 'anonymous@figbud.com')
+ON CONFLICT (email) DO NOTHING;
+
+-- Insert some sample components
+INSERT INTO figma_components (name, type, category, description) VALUES
+  ('Primary Button', 'button', 'form', 'A primary action button with blue background'),
+  ('Secondary Button', 'button', 'form', 'A secondary action button with outline style'),
+  ('Text Input', 'input', 'form', 'Basic text input field'),
+  ('Card Component', 'card', 'layout', 'A container card with shadow'),
+  ('Navigation Bar', 'navbar', 'navigation', 'Top navigation bar component')
+ON CONFLICT DO NOTHING;
+
+-- Verify tables were created
+SELECT table_name 
+FROM information_schema.tables 
+WHERE table_schema = 'public' 
+ORDER BY table_name;`;
+      navigator.clipboard.writeText(sql).then(() => {
+        document.getElementById('copyStatus').innerHTML = ' <span class="success">✅ Copied!</span>';
+        setTimeout(() => {
+          document.getElementById('copyStatus').innerHTML = '';
+        }, 3000);
+      }).catch(err => {
+        document.getElementById('copyStatus').innerHTML = ' <span class="warning">⚠️ Please select and copy manually</span>';
+      });
+    }
+  </script>
+</body>
+</html>

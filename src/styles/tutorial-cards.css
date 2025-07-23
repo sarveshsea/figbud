@@ -1,0 +1,241 @@
+/* Tutorial Card Styles */
+.tutorial-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  /* Removed fade-in animation */
+}
+
+.tutorial-card:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(99, 102, 241, 0.3);
+  /* Removed transform and excessive shadow */
+}
+
+.tutorial-thumbnail {
+  position: relative;
+  width: 100%;
+  padding-bottom: 56.25%; /* 16:9 aspect ratio */
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.tutorial-thumbnail img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+/* Removed image scale on hover */
+
+.tutorial-duration {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+}
+
+.play-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 48px;
+  height: 48px;
+  background: rgba(0, 0, 0, 0.7);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.tutorial-card:hover .play-overlay {
+  opacity: 1;
+}
+
+.tutorial-content {
+  padding: 12px;
+}
+
+.tutorial-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0 0 4px 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-height: 1.4;
+}
+
+.tutorial-channel {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0 0 8px 0;
+}
+
+.tutorial-meta {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.skill-level {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 12px;
+  color: white;
+  text-transform: capitalize;
+}
+
+.relevance-score {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.6);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.relevance-score::before {
+  content: '⭐';
+  font-size: 10px;
+}
+
+/* Timestamps Section */
+.tutorial-timestamps {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.timestamps-label {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
+  margin: 0 0 6px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.timestamps-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.timestamp-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.02);
+  text-decoration: none;
+  transition: all 0.2s ease;
+  font-size: 12px;
+}
+
+.timestamp-link:hover {
+  background: rgba(99, 102, 241, 0.1);
+  transform: translateX(4px);
+}
+
+.timestamp-time {
+  color: rgba(99, 102, 241, 0.9);
+  font-weight: 500;
+  font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+  min-width: 40px;
+}
+
+.timestamp-topic {
+  color: rgba(255, 255, 255, 0.8);
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.more-timestamps {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
+  padding: 4px 8px;
+  text-align: center;
+  font-style: italic;
+}
+
+/* Tutorial Grid Layout */
+.tutorials-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  margin-top: 12px;
+}
+
+/* Loading State */
+.tutorial-skeleton {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  overflow: hidden;
+  /* Removed skeleton pulse animation */
+}
+
+.tutorial-skeleton .skeleton-thumbnail {
+  width: 100%;
+  padding-bottom: 56.25%;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.tutorial-skeleton .skeleton-content {
+  padding: 12px;
+}
+
+.tutorial-skeleton .skeleton-title {
+  height: 20px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+
+.tutorial-skeleton .skeleton-channel {
+  height: 14px;
+  width: 60%;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 4px;
+}
+
+/* Removed skeleton pulse animation */
+
+/* Removed fade-in animation */
+
+/* Empty State */
+.no-tutorials {
+  text-align: center;
+  padding: 24px;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 14px;
+}
+
+.no-tutorials-icon {
+  font-size: 48px;
+  margin-bottom: 12px;
+  opacity: 0.3;
+}

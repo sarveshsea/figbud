@@ -1,0 +1,240 @@
+/* Pixelated Frog Loader */
+
+/* Basic loader container */
+.pixel-frog-container {
+  position: relative;
+  width: 100%;
+  max-width: 350px;
+  min-height: 100px;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  overflow: visible;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 0;
+  box-shadow: none;
+}
+
+/* Pixel frog wrapper */
+.pixel-frog-wrapper {
+  position: relative;
+  width: 60px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Pixelated frog grid */
+.pixel-frog {
+  display: grid;
+  grid-template-columns: repeat(10, 5px);
+  grid-template-rows: repeat(8, 5px);
+  gap: 0;
+  animation: none; /* Remove hopping for more authentic pixel art */
+}
+
+/* Individual pixel */
+.pixel {
+  width: 5px;
+  height: 5px;
+  border-radius: 0;
+}
+
+.pixel.green {
+  background: #4ade80;
+  box-shadow: none; /* Remove glow for authentic pixel art */
+}
+
+.pixel.dark-green {
+  background: #22c55e;
+}
+
+.pixel.light-green {
+  background: #86efac;
+}
+
+.pixel.black {
+  background: #1a1a1a;
+}
+
+/* Eye - no animation for authentic look */
+.pixel.eye {
+  animation: none;
+}
+
+@keyframes blink {
+  0%, 90%, 100% { 
+    background: #1a1a1a;
+    transform: scaleY(1);
+  }
+  95% { 
+    background: #1a1a1a;
+    transform: scaleY(0.1);
+  }
+}
+
+/* Hop animation */
+@keyframes hop {
+  0%, 100% { 
+    transform: translateY(0) scale(1);
+  }
+  25% {
+    transform: translateY(-2px) scale(1.05);
+  }
+  50% { 
+    transform: translateY(-8px) scale(1.1);
+  }
+  75% {
+    transform: translateY(-2px) scale(1.05);
+  }
+}
+
+/* Pixel row helper */
+.pixel-row {
+  display: contents;
+}
+
+/* Frame variations for animation */
+.pixel-frog-frame-1 {
+  transform: rotate(-2deg);
+}
+
+.pixel-frog-frame-2 {
+  transform: rotate(2deg);
+}
+
+.pixel-frog-frame-3 {
+  transform: rotate(-1deg);
+}
+
+/* Status section */
+.pixel-status {
+  width: 100%;
+  text-align: center;
+  position: relative;
+}
+
+.pixel-text {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.95);
+  margin: 0 0 2px 0;
+  line-height: 1.4;
+  font-weight: 500;
+}
+
+.pixel-step {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 11px;
+  color: rgba(99, 102, 241, 0.95);
+  margin: 0 0 4px 0;
+  line-height: 1.3;
+}
+
+/* Progress wrapper */
+.pixel-progress-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+/* Progress bar */
+.pixel-progress-bar {
+  flex: 1;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  position: relative;
+  overflow: hidden;
+  border-radius: 2px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.pixel-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4ade80, #22c55e);
+  transition: width 300ms ease;
+  border-radius: 2px;
+  box-shadow: 0 0 8px rgba(74, 222, 128, 0.5);
+  position: relative;
+}
+
+/* Animated shine effect on progress */
+.pixel-progress-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -20px;
+  width: 20px;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  animation: shine 2s linear infinite;
+}
+
+@keyframes shine {
+  0% {
+    left: -20px;
+  }
+  100% {
+    left: calc(100% + 20px);
+  }
+}
+
+/* Progress percentage */
+.pixel-progress-percent {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 11px;
+  color: #4ade80;
+  font-weight: 600;
+  min-width: 35px;
+  text-align: right;
+}
+
+/* Time display */
+.pixel-time {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 4px 0 0 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+/* Loading dots animation */
+.loading-dots {
+  display: inline-flex;
+  gap: 2px;
+}
+
+.loading-dots span {
+  width: 4px;
+  height: 4px;
+  background: #4ade80;
+  border-radius: 50%;
+  animation: dot-pulse 1.4s ease-in-out infinite;
+}
+
+.loading-dots span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.loading-dots span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes dot-pulse {
+  0%, 80%, 100% {
+    transform: scale(0.8);
+    opacity: 0.5;
+  }
+  40% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+}

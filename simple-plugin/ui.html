@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 14px;
+      background: #f5f5f5;
+      padding: 16px;
+    }
+    
+    h1 {
+      font-size: 20px;
+      margin-bottom: 16px;
+      color: #333;
+    }
+    
+    .card {
+      background: white;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    button {
+      background: #5551ff;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      font-size: 14px;
+      cursor: pointer;
+      width: 100%;
+      margin-bottom: 8px;
+    }
+    
+    button:hover {
+      background: #4441ee;
+    }
+    
+    button:active {
+      background: #3331dd;
+    }
+    
+    .status {
+      color: #666;
+      font-size: 12px;
+      margin-top: 8px;
+    }
+    
+    #chat-area {
+      background: white;
+      border-radius: 8px;
+      padding: 16px;
+      min-height: 200px;
+    }
+    
+    #chat-input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 14px;
+      margin-top: 12px;
+    }
+    
+    #chat-messages {
+      max-height: 300px;
+      overflow-y: auto;
+      margin-bottom: 12px;
+    }
+    
+    .message {
+      padding: 8px;
+      margin-bottom: 8px;
+      border-radius: 6px;
+    }
+    
+    .user-message {
+      background: #e3f2fd;
+      text-align: right;
+    }
+    
+    .bot-message {
+      background: #f5f5f5;
+    }
+  </style>
+</head>
+<body>
+  <h1>🤖 FigBud AI Assistant</h1>
+  
+  <div class="card">
+    <h2>Quick Actions</h2>
+    <button onclick="createRectangle()">Create Test Rectangle</button>
+    <button onclick="createButton()">Create Button</button>
+    <button onclick="createCard()">Create Card</button>
+    <div class="status" id="status">Ready</div>
+  </div>
+  
+  <div class="card" id="chat-area">
+    <h2>Chat</h2>
+    <div id="chat-messages"></div>
+    <input 
+      type="text" 
+      id="chat-input" 
+      placeholder="Ask me anything... (e.g., 'create a button')"
+      onkeypress="handleChatKeypress(event)"
+    />
+  </div>
+
+  <script>
+    console.log('[UI] Script starting...');
+    
+    // Update status
+    function updateStatus(message) {
+      document.getElementById('status').textContent = message;
+    }
+    
+    // Create rectangle
+    function createRectangle() {
+      console.log('[UI] Creating rectangle...');
+      parent.postMessage({ pluginMessage: { type: 'create-rectangle' } }, '*');
+      updateStatus('Creating rectangle...');
+    }
+    
+    // Create button component
+    function createButton() {
+      addBotMessage("I'll create a button for you!");
+      parent.postMessage({ pluginMessage: { 
+        type: 'create-component',
+        component: 'button',
+        props: { text: 'Click me', variant: 'primary' }
+      } }, '*');
+    }
+    
+    // Create card component
+    function createCard() {
+      addBotMessage("Creating a card component!");
+      parent.postMessage({ pluginMessage: { 
+        type: 'create-component',
+        component: 'card',
+        props: { title: 'Card Title', description: 'This is a card created by FigBud' }
+      } }, '*');
+    }
+    
+    // Handle chat input
+    function handleChatKeypress(event) {
+      if (event.key === 'Enter') {
+        const input = event.target;
+        const message = input.value.trim();
+        if (message) {
+          addUserMessage(message);
+          processMessage(message);
+          input.value = '';
+        }
+      }
+    }
+    
+    // Add user message to chat
+    function addUserMessage(message) {
+      const messagesDiv = document.getElementById('chat-messages');
+      const messageEl = document.createElement('div');
+      messageEl.className = 'message user-message';
+      messageEl.textContent = message;
+      messagesDiv.appendChild(messageEl);
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+    
+    // Add bot message to chat
+    function addBotMessage(message) {
+      const messagesDiv = document.getElementById('chat-messages');
+      const messageEl = document.createElement('div');
+      messageEl.className = 'message bot-message';
+      messageEl.textContent = message;
+      messagesDiv.appendChild(messageEl);
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+    
+    // Process chat messages
+    function processMessage(message) {
+      const lower = message.toLowerCase();
+      
+      if (lower.includes('button')) {
+        createButton();
+      } else if (lower.includes('card')) {
+        createCard();
+      } else if (lower.includes('rectangle') || lower.includes('rect')) {
+        createRectangle();
+      } else {
+        addBotMessage("I can help you create UI components! Try saying 'create a button' or 'make a card'.");
+      }
+    }
+    
+    // Listen for messages from plugin
+    window.onmessage = (event) => {
+      const message = event.data.pluginMessage;
+      if (message) {
+        console.log('[UI] Received message:', message);
+        if (message.type === 'rectangle-created') {
+          updateStatus('Rectangle created!');
+          setTimeout(() => updateStatus('Ready'), 2000);
+        }
+      }
+    };
+    
+    // Initial message
+    addBotMessage("Hi! I'm FigBud, your AI assistant. I can help you create UI components. Try asking me to create a button or card!");
+    
+    console.log('[UI] Ready');
+  </script>
+</body>
+</html>

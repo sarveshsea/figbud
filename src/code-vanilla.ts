@@ -229,7 +229,7 @@ async function init() {
     figma.showUI(__html__, {
       width: 400,
       height: 600,
-      title: 'FigBud AI Assistant'
+      title: 'FigBud'
     });
     
     console.log('[FigBud] UI shown');
@@ -277,11 +277,12 @@ figma.ui.onmessage = async (msg) => {
     }
   } catch (error) {
     console.error('[FigBud] Error handling message:', error);
+    const errorMessage = error instanceof Error ? error.message : 'An error occurred';
     figma.ui.postMessage({
       type: 'error',
-      error: error.message
+      error: errorMessage
     });
-    figma.notify('Error: ' + error.message);
+    figma.notify('Error: ' + errorMessage);
   }
 };
 

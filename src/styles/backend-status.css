@@ -1,0 +1,168 @@
+/* Backend Status Styles */
+.backend-status-container {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 6px;
+  padding: 8px;
+  margin-bottom: 4px;
+  backdrop-filter: blur(8px);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.backend-processes {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.backend-process-item {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 4px;
+  padding: 6px 8px;
+  transition: all 0.2s ease;
+  font-size: 12px;
+}
+
+.backend-process-item:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.process-status-icon {
+  font-size: 14px;
+  min-width: 20px;
+  text-align: center;
+  /* Removed pulse animation */
+}
+
+/* Removed spin animation for active status */
+
+/* Removed slide-in animation */
+
+/* Removed process item appear animation */
+
+/* Removed pulse animation */
+
+/* Removed spin animation */
+
+/* Process Timeline */
+.process-timeline {
+  position: relative;
+  padding-left: 24px;
+  margin-top: 8px;
+}
+
+.process-timeline::before {
+  content: '';
+  position: absolute;
+  left: 8px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: rgba(99, 102, 241, 0.2);
+}
+
+.timeline-item {
+  position: relative;
+  padding: 8px 0;
+}
+
+.timeline-item::before {
+  content: '';
+  position: absolute;
+  left: -18px;
+  top: 12px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(99, 102, 241, 0.6);
+  border: 2px solid rgba(0, 0, 0, 0.5);
+}
+
+.timeline-item.completed::before {
+  background: rgba(16, 185, 129, 0.8);
+}
+
+.timeline-item.failed::before {
+  background: rgba(239, 68, 68, 0.8);
+}
+
+/* Performance Metrics */
+.performance-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.metric-item {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 6px;
+  padding: 8px;
+  text-align: center;
+}
+
+.metric-value {
+  font-size: 18px;
+  font-weight: 600;
+  color: rgba(99, 102, 241, 0.9);
+  font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+}
+
+.metric-label {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 2px;
+}
+
+/* Status Pills */
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 500;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.status-pill.active {
+  background: rgba(99, 102, 241, 0.1);
+  border-color: rgba(99, 102, 241, 0.3);
+  color: rgba(99, 102, 241, 0.9);
+}
+
+.status-pill.success {
+  background: rgba(16, 185, 129, 0.1);
+  border-color: rgba(16, 185, 129, 0.3);
+  color: rgba(16, 185, 129, 0.9);
+}
+
+.status-pill.error {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: rgba(239, 68, 68, 0.9);
+}
+
+/* Expandable Details */
+.process-details {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+  display: none;
+}
+
+.backend-process-item.expanded .process-details {
+  display: block;
+  /* Removed expand animation */
+}
+
+/* Removed expand animation */

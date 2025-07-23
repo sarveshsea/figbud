@@ -1,5 +1,5 @@
 {
-  "name": "FigBud AI Assistant",
+  "name": "FigBud",
   "id": "figbud-plugin-1752945749024-7vkfms1rj",
   "api": "1.0.0",
   "main": "code.js",
@@ -7,10 +7,6 @@
   "enableProposedApi": false,
   "editorType": ["figma"],
   "ui": "ui.html",
-  "networkAccess": {
-    "allowedDomains": ["*"],
-    "reasoning": "FigBud needs to connect to AI services (OpenAI, DeepSeek, OpenRouter) and the backend server for chat functionality"
-  },
   "documentAccess": "dynamic-page",
   "permissions": [
     "currentuser",
@@ -18,7 +14,7 @@
   ],
   "menu": [
     {
-      "name": "Open FigBud AI",
+      "name": "Open FigBud",
       "command": "open"
     },
     {
@@ -47,7 +43,7 @@
   "relaunchButtons": [
     {
       "command": "open",
-      "name": "Open FigBud AI"
+      "name": "Open FigBud"
     }
   ]
 }

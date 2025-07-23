@@ -1,6 +1,10 @@
 # FigBud - AI-Powered Figma Assistant
 
-FigBud is an AI-powered Figma widget that enhances designer productivity by providing timestamped YouTube tutorial recommendations, automated demo creation, step-by-step guidance, and collaboration tools. Built with TypeScript, React, and Node.js, integrating Figma Widget API, YouTube Data API, and OpenAI API.
+FigBud is an AI-powered Figma plugin that enhances designer productivity by providing timestamped YouTube tutorial recommendations, automated demo creation, step-by-step guidance, and collaboration tools. Built with TypeScript, React, and Node.js, integrating Figma Plugin API, YouTube Data API, and multiple AI providers.
+
+## 🔐 Security Notice
+
+**IMPORTANT**: This project uses API keys for various services. Please read the [Security Best Practices](#security-best-practices) section before setting up.
 
 ## 🌟 Features
 
@@ -272,21 +276,80 @@ npm run start:server     # Start production server
 - **Custom analytics** for user behavior
 - **Performance monitoring** built-in
 
-## 🔒 Security
+## 🔒 Security Best Practices
 
-### Implemented Security Measures
+### Critical Security Setup
+
+⚠️ **NEVER commit API keys or .env files to version control!**
+
+1. **Environment Configuration**
+   ```bash
+   # Copy the example file
+   cp .env.example .env
+   
+   # Edit .env with your actual API keys
+   # NEVER share or commit this file!
+   ```
+
+2. **Validate Your Environment**
+   ```bash
+   # Run the validation script
+   npm run validate:env
+   # or
+   node scripts/validate-env.js
+   ```
+
+3. **Use the Plugin's Secure Storage**
+   - Users can provide their own API keys via the plugin settings
+   - Keys are encrypted and stored locally in Figma
+   - No server-side storage of sensitive credentials
+
+### API Key Management
+
+#### Required Keys
+- **Supabase**: Database access (get from https://app.supabase.com)
+- **JWT Secrets**: Generate with `openssl rand -base64 32`
+
+#### Optional Keys (Users can provide their own)
+- **OpenRouter**: AI model access (https://openrouter.ai/keys)
+- **DeepSeek**: Direct AI API (https://platform.deepseek.com/api_keys)
+- **YouTube**: Tutorial search (https://console.cloud.google.com)
+- **Figma**: API access (https://www.figma.com/settings)
+
+### Security Checklist
+
+- [ ] `.env` file is NOT in version control
+- [ ] All API keys are rotated regularly (90 days)
+- [ ] 2FA enabled on all service accounts
+- [ ] Different keys for dev/staging/production
+- [ ] API usage monitoring enabled
+- [ ] Rate limiting configured
+- [ ] CORS properly configured
+- [ ] JWT secrets are strong and unique
+
+### If Keys Are Exposed
+
+1. **Immediately rotate all affected keys**
+2. **Check service logs for unauthorized usage**
+3. **Review billing for unexpected charges**
+4. **Enable additional security measures (IP restrictions, etc.)**
+5. **See `SECURITY_URGENT.md` for detailed rotation instructions**
+
+### Implemented Security Features
 - JWT authentication with refresh tokens
-- Rate limiting on API endpoints
-- CORS configuration for Figma domains
+- Rate limiting on API endpoints (configurable)
+- CORS configuration for Figma domains only
 - Helmet.js security headers
 - Input validation and sanitization
 - Environment variable protection
+- Circuit breaker pattern for external services
+- API key validation on startup
 
-### Security Best Practices
-- Never commit API keys or secrets
+### Additional Security Measures
 - Use HTTPS in production
-- Regular dependency updates
-- Security audits with `npm audit`
+- Regular dependency updates: `npm audit fix`
+- Security audits: `npm audit`
+- Monitor for vulnerabilities: `npm outdated`
 
 ## 📈 Roadmap
 

@@ -6,7 +6,10 @@ interface OnboardingViewProps {
   onComplete: (preferences: UserPreferences) => void;
 }
 
-export const OnboardingView: React.FC<OnboardingViewProps> = ({ user, onComplete }) => {
+export const OnboardingView: React.FC<OnboardingViewProps> = ({
+  user,
+  onComplete,
+}) => {
   const [step, setStep] = useState(0);
   const [preferences, setPreferences] = useState<UserPreferences>({
     skillLevel: 'beginner',
@@ -57,7 +60,7 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({ user, onComplete
   };
 
   const updatePreferences = (updates: Partial<UserPreferences>) => {
-    setPreferences(prev => ({ ...prev, ...updates }));
+    setPreferences((prev) => ({ ...prev, ...updates }));
   };
 
   const renderStepContent = () => {
@@ -69,14 +72,28 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({ user, onComplete
         return (
           <div className="onboarding-options">
             {[
-              { value: 'beginner', label: 'Beginner', description: 'New to Figma, learning the basics' },
-              { value: 'intermediate', label: 'Intermediate', description: 'Comfortable with core features' },
-              { value: 'advanced', label: 'Advanced', description: 'Expert user, complex workflows' },
+              {
+                value: 'beginner',
+                label: 'Beginner',
+                description: 'New to Figma, learning the basics',
+              },
+              {
+                value: 'intermediate',
+                label: 'Intermediate',
+                description: 'Comfortable with core features',
+              },
+              {
+                value: 'advanced',
+                label: 'Advanced',
+                description: 'Expert user, complex workflows',
+              },
             ].map((option) => (
               <button
                 key={option.value}
                 className={`option-card ${preferences.skillLevel === option.value ? 'selected' : ''}`}
-                onClick={() => updatePreferences({ skillLevel: option.value as any })}
+                onClick={() =>
+                  updatePreferences({ skillLevel: option.value as any })
+                }
               >
                 <h4>{option.label}</h4>
                 <p>{option.description}</p>
@@ -89,15 +106,37 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({ user, onComplete
         return (
           <div className="onboarding-options">
             {[
-              { value: 'minimal', label: 'Minimal', emoji: '⚪', description: 'Clean, simple, less is more' },
-              { value: 'modern', label: 'Modern', emoji: '🔷', description: 'Contemporary, trendy designs' },
-              { value: 'playful', label: 'Playful', emoji: '🎨', description: 'Colorful, fun, creative' },
-              { value: 'professional', label: 'Professional', emoji: '💼', description: 'Corporate, business-focused' },
+              {
+                value: 'minimal',
+                label: 'Minimal',
+                emoji: '⚪',
+                description: 'Clean, simple, less is more',
+              },
+              {
+                value: 'modern',
+                label: 'Modern',
+                emoji: '🔷',
+                description: 'Contemporary, trendy designs',
+              },
+              {
+                value: 'playful',
+                label: 'Playful',
+                emoji: '🎨',
+                description: 'Colorful, fun, creative',
+              },
+              {
+                value: 'professional',
+                label: 'Professional',
+                emoji: '💼',
+                description: 'Corporate, business-focused',
+              },
             ].map((option) => (
               <button
                 key={option.value}
                 className={`option-card ${preferences.designStyle === option.value ? 'selected' : ''}`}
-                onClick={() => updatePreferences({ designStyle: option.value as any })}
+                onClick={() =>
+                  updatePreferences({ designStyle: option.value as any })
+                }
               >
                 <div className="option-emoji">{option.emoji}</div>
                 <h4>{option.label}</h4>
@@ -129,7 +168,9 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({ user, onComplete
                   onChange={(e) => {
                     const newUseCases = e.target.checked
                       ? [...preferences.commonUseCases, useCase]
-                      : preferences.commonUseCases.filter(uc => uc !== useCase);
+                      : preferences.commonUseCases.filter(
+                          (uc) => uc !== useCase
+                        );
                     updatePreferences({ commonUseCases: newUseCases });
                   }}
                 />
@@ -144,15 +185,35 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({ user, onComplete
         return (
           <div className="onboarding-options">
             {[
-              { value: 'short', label: 'Short (< 10 min)', description: 'Quick, focused tutorials' },
-              { value: 'medium', label: 'Medium (10-30 min)', description: 'Detailed explanations' },
-              { value: 'long', label: 'Long (> 30 min)', description: 'Comprehensive deep-dives' },
-              { value: 'any', label: 'Any length', description: 'Show me everything relevant' },
+              {
+                value: 'short',
+                label: 'Short (< 10 min)',
+                description: 'Quick, focused tutorials',
+              },
+              {
+                value: 'medium',
+                label: 'Medium (10-30 min)',
+                description: 'Detailed explanations',
+              },
+              {
+                value: 'long',
+                label: 'Long (> 30 min)',
+                description: 'Comprehensive deep-dives',
+              },
+              {
+                value: 'any',
+                label: 'Any length',
+                description: 'Show me everything relevant',
+              },
             ].map((option) => (
               <button
                 key={option.value}
                 className={`option-card ${preferences.preferredTutorialLength === option.value ? 'selected' : ''}`}
-                onClick={() => updatePreferences({ preferredTutorialLength: option.value as any })}
+                onClick={() =>
+                  updatePreferences({
+                    preferredTutorialLength: option.value as any,
+                  })
+                }
               >
                 <h4>{option.label}</h4>
                 <p>{option.description}</p>
@@ -173,9 +234,14 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({ user, onComplete
                 <input
                   type="checkbox"
                   checked={preferences.notifications.email}
-                  onChange={(e) => updatePreferences({
-                    notifications: { ...preferences.notifications, email: e.target.checked }
-                  })}
+                  onChange={(e) =>
+                    updatePreferences({
+                      notifications: {
+                        ...preferences.notifications,
+                        email: e.target.checked,
+                      },
+                    })
+                  }
                 />
                 <span className="slider"></span>
               </label>
@@ -190,9 +256,14 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({ user, onComplete
                 <input
                   type="checkbox"
                   checked={preferences.notifications.inApp}
-                  onChange={(e) => updatePreferences({
-                    notifications: { ...preferences.notifications, inApp: e.target.checked }
-                  })}
+                  onChange={(e) =>
+                    updatePreferences({
+                      notifications: {
+                        ...preferences.notifications,
+                        inApp: e.target.checked,
+                      },
+                    })
+                  }
                 />
                 <span className="slider"></span>
               </label>
@@ -207,9 +278,14 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({ user, onComplete
                 <input
                   type="checkbox"
                   checked={preferences.notifications.weekly}
-                  onChange={(e) => updatePreferences({
-                    notifications: { ...preferences.notifications, weekly: e.target.checked }
-                  })}
+                  onChange={(e) =>
+                    updatePreferences({
+                      notifications: {
+                        ...preferences.notifications,
+                        weekly: e.target.checked,
+                      },
+                    })
+                  }
                 />
                 <span className="slider"></span>
               </label>
@@ -226,31 +302,25 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({ user, onComplete
     <div className="onboarding-view">
       <div className="onboarding-header">
         <div className="progress-bar">
-          <div 
+          <div
             className="progress-fill"
             style={{ width: `${((step + 1) / steps.length) * 100}%` }}
           ></div>
         </div>
         <h2>{steps[step]?.title || 'Setup'}</h2>
-        <p className="step-indicator">Step {step + 1} of {steps.length}</p>
+        <p className="step-indicator">
+          Step {step + 1} of {steps.length}
+        </p>
       </div>
 
-      <div className="onboarding-content">
-        {renderStepContent()}
-      </div>
+      <div className="onboarding-content">{renderStepContent()}</div>
 
       <div className="onboarding-footer">
-        <button
-          className="skip-button"
-          onClick={handleSkip}
-        >
+        <button className="skip-button" onClick={handleSkip}>
           Skip setup
         </button>
-        
-        <button
-          className="figma-button"
-          onClick={handleNext}
-        >
+
+        <button className="figma-button" onClick={handleNext}>
           {step === steps.length - 1 ? 'Complete Setup' : 'Next'}
         </button>
       </div>

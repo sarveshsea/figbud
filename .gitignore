@@ -83,3 +83,20 @@ Thumbs.db
 
 # Figma widget specific
 figma-widget-bundle/
+
+# Security - prevent accidental exposure of API keys in documentation
+*_COMPLETE.md
+*_COMPLETE_*.md
+*_OPTIMIZED.md
+SECURITY_*.md
+API_INTEGRATION_*.md
+# Keep essential documentation
+!README.md
+!SETUP_GUIDE.md
+!docs/
+
+# Temporary sensitive files
+*.keys
+*.secrets
+api-keys.txt
+credentials.json

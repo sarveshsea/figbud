@@ -1,0 +1,55 @@
+/* Simplified loader styles */
+
+/* Basic loading spinner */
+.loading-spinner {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loading-icon-pulse {
+  opacity: 0.7;
+}
+
+/* Process icon states */
+.process-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
+.process-icon.pending {
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.process-icon.active {
+  background: rgba(33, 150, 243, 0.1);
+  color: #2196F3;
+}
+
+.process-icon.completed {
+  background: rgba(76, 175, 80, 0.1);
+}
+
+.process-icon.failed {
+  background: rgba(244, 67, 54, 0.1);
+}
+
+/* Loading insights card */
+.loading-insights-card {
+  opacity: 1;
+}
+
+/* Process loading dots */
+.process-loading-dots {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 4px;
+}
+
+/* Removed all animations and decorative effects */

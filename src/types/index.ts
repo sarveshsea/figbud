@@ -5,6 +5,30 @@ export interface FigmaUser {
   photoUrl?: string;
 }
 
+// Link Preview types
+export interface ParsedLink {
+  url: string;
+  originalText: string;
+  domain: string;
+  protocol: string;
+  path: string;
+}
+
+export interface LinkSegment {
+  type: 'text' | 'link';
+  content: string;
+  linkData?: ParsedLink;
+}
+
+export interface LinkMetadata {
+  url: string;
+  title?: string;
+  description?: string;
+  image?: string;
+  favicon?: string;
+  siteName?: string;
+}
+
 // Authentication types
 export interface AuthResponse {
   success: boolean;
@@ -56,6 +80,7 @@ export interface ChatMessage {
   type: 'user' | 'assistant' | 'system' | 'bot';
   content: string;
   timestamp: Date;
+  suggestions?: string[];
   metadata?: {
     tutorials?: TutorialResult[];
     demos?: DemoResult[];
@@ -65,8 +90,37 @@ export interface ChatMessage {
     teacherNote?: string;
     model?: string;
     isFree?: boolean;
+    stepByStep?: string[];
     attempts?: { model: string; success: boolean; error?: string }[];
+    intent?: {
+      action: string | null;
+      componentTypes: string[];
+      keywords: string[];
+      tutorialRequests: string[];
+      isQuestion: boolean;
+      needsGuidance: boolean;
+      confidence: number;
+    };
+    components?: ComponentResult[];
+    actionableSteps?: ActionableStep[];
   };
+}
+
+export interface ComponentResult {
+  id: string;
+  name: string;
+  type: string;
+  category: string;
+  description: string;
+  thumbnail_url?: string;
+  usage_count: number;
+  onceUIMapping?: any;
+}
+
+export interface ActionableStep {
+  step: number;
+  action: string;
+  description: string;
 }
 
 // API response types
@@ -76,19 +130,21 @@ export interface TutorialResult {
   title: string;
   description: string;
   thumbnailUrl: string;
-  duration: number;
+  duration: string; // Changed to string for formatted duration
   channelTitle: string;
   url: string;
   skillLevel: 'beginner' | 'intermediate' | 'advanced';
-  relevanceScore: number;
+  relevanceScore?: number;
   timestamps?: TutorialTimestamp[];
+  views?: number;
 }
 
 export interface TutorialTimestamp {
-  time: number;
-  description: string;
-  topic: string;
-  url: string;
+  time: string; // Changed to string for formatted time
+  seconds?: number;
+  title: string;
+  topic?: string;
+  url?: string;
 }
 
 export interface DemoResult {

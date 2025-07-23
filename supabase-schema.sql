@@ -1,137 +1,137 @@
--- FigBud Supabase Schema
--- Run this in your Supabase SQL editor
+-- FigBud Supabase Schema (PostgreSQL)
 
 -- Enable UUID extension
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
--- Users table (extends Supabase auth.users)
-CREATE TABLE IF NOT EXISTS public.figbud_users (
-  id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-  email TEXT UNIQUE NOT NULL,
-  display_name TEXT,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW()),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW())
-);
-
--- Component templates table
-CREATE TABLE IF NOT EXISTS public.component_templates (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  user_id UUID REFERENCES public.figbud_users(id) ON DELETE CASCADE,
-  name TEXT NOT NULL,
-  component_type TEXT NOT NULL,
-  properties JSONB NOT NULL,
-  is_public BOOLEAN DEFAULT false,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW()),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW())
-);
-
--- Usage history table
-CREATE TABLE IF NOT EXISTS public.usage_history (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  user_id UUID REFERENCES public.figbud_users(id) ON DELETE CASCADE,
-  action_type TEXT NOT NULL, -- 'component_created', 'chat_query', 'sandbox_created'
-  component_type TEXT,
-  chat_prompt TEXT,
+-- Chat sessions table
+CREATE TABLE IF NOT EXISTS chat_sessions (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  conversation_id VARCHAR(255) NOT NULL,
+  message TEXT NOT NULL,
+  response TEXT NOT NULL,
   metadata JSONB,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW())
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  user_id UUID
 );
 
--- Chat conversations table
-CREATE TABLE IF NOT EXISTS public.chat_conversations (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  user_id UUID REFERENCES public.figbud_users(id) ON DELETE CASCADE,
-  widget_session_id TEXT NOT NULL,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW())
+-- Create indexes
+CREATE INDEX IF NOT EXISTS idx_chat_conversation_id ON chat_sessions(conversation_id);
+CREATE INDEX IF NOT EXISTS idx_chat_created_at ON chat_sessions(created_at);
+
+-- Components created table
+CREATE TABLE IF NOT EXISTS components_created (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  component_type VARCHAR(50) NOT NULL,
+  properties JSONB,
+  prompt TEXT,
+  teacher_note TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  user_id UUID,
+  conversation_id VARCHAR(255)
 );
 
--- Chat messages table
-CREATE TABLE IF NOT EXISTS public.chat_messages (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  conversation_id UUID REFERENCES public.chat_conversations(id) ON DELETE CASCADE,
-  role TEXT NOT NULL CHECK (role IN ('user', 'assistant')),
-  content TEXT NOT NULL,
-  metadata JSONB,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW())
+-- Create indexes
+CREATE INDEX IF NOT EXISTS idx_component_type ON components_created(component_type);
+CREATE INDEX IF NOT EXISTS idx_component_created_at ON components_created(created_at);
+
+-- API cache table (for caching AI responses)
+CREATE TABLE IF NOT EXISTS api_cache (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  cache_key VARCHAR(255) UNIQUE NOT NULL,
+  response_data JSONB NOT NULL,
+  provider VARCHAR(50),
+  expires_at TIMESTAMPTZ NOT NULL,
+  hit_count INTEGER DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  last_accessed_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Indexes for performance
-CREATE INDEX idx_component_templates_user_id ON public.component_templates(user_id);
-CREATE INDEX idx_usage_history_user_id ON public.usage_history(user_id);
-CREATE INDEX idx_chat_conversations_user_id ON public.chat_conversations(user_id);
-CREATE INDEX idx_chat_messages_conversation_id ON public.chat_messages(conversation_id);
+-- API calls logging
+CREATE TABLE IF NOT EXISTS api_calls (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID,
+  endpoint VARCHAR(255),
+  method VARCHAR(10),
+  request_body JSONB,
+  response_status INTEGER,
+  response_body JSONB,
+  provider VARCHAR(50),
+  tokens_used INTEGER,
+  cost_cents INTEGER,
+  duration_ms INTEGER,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
 
--- Row Level Security (RLS) policies
-ALTER TABLE public.figbud_users ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.component_templates ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.usage_history ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.chat_conversations ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.chat_messages ENABLE ROW LEVEL SECURITY;
+-- Component usage statistics (materialized view)
+CREATE MATERIALIZED VIEW IF NOT EXISTS component_stats AS
+SELECT 
+  component_type,
+  COUNT(*) as count,
+  DATE_TRUNC('day', created_at) as date
+FROM components_created
+GROUP BY component_type, DATE_TRUNC('day', created_at)
+ORDER BY date DESC, count DESC;
 
--- Policies for figbud_users
-CREATE POLICY "Users can view own profile" ON public.figbud_users
-  FOR SELECT USING (auth.uid() = id);
+-- Enable Row Level Security
+ALTER TABLE chat_sessions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE components_created ENABLE ROW LEVEL SECURITY;
+ALTER TABLE api_cache ENABLE ROW LEVEL SECURITY;
+ALTER TABLE api_calls ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Users can update own profile" ON public.figbud_users
-  FOR UPDATE USING (auth.uid() = id);
+-- Drop existing policies if they exist
+DROP POLICY IF EXISTS "Allow all operations for chat_sessions" ON chat_sessions;
+DROP POLICY IF EXISTS "Allow all operations for components_created" ON components_created;
+DROP POLICY IF EXISTS "Allow all operations for api_cache" ON api_cache;
+DROP POLICY IF EXISTS "Allow all operations for api_calls" ON api_calls;
 
--- Policies for component_templates
-CREATE POLICY "Users can view own templates" ON public.component_templates
-  FOR SELECT USING (auth.uid() = user_id OR is_public = true);
+-- Create new policies
+-- For development, allow all operations
+CREATE POLICY "Allow all operations for chat_sessions" 
+  ON chat_sessions 
+  FOR ALL 
+  USING (true)
+  WITH CHECK (true);
 
-CREATE POLICY "Users can create own templates" ON public.component_templates
-  FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Allow all operations for components_created" 
+  ON components_created 
+  FOR ALL 
+  USING (true)
+  WITH CHECK (true);
 
-CREATE POLICY "Users can update own templates" ON public.component_templates
-  FOR UPDATE USING (auth.uid() = user_id);
+CREATE POLICY "Allow all operations for api_cache" 
+  ON api_cache 
+  FOR ALL 
+  USING (true)
+  WITH CHECK (true);
 
-CREATE POLICY "Users can delete own templates" ON public.component_templates
-  FOR DELETE USING (auth.uid() = user_id);
+CREATE POLICY "Allow all operations for api_calls" 
+  ON api_calls 
+  FOR ALL 
+  USING (true)
+  WITH CHECK (true);
 
--- Policies for usage_history
-CREATE POLICY "Users can view own usage" ON public.usage_history
-  FOR SELECT USING (auth.uid() = user_id);
-
-CREATE POLICY "Users can create own usage" ON public.usage_history
-  FOR INSERT WITH CHECK (auth.uid() = user_id);
-
--- Policies for chat_conversations
-CREATE POLICY "Users can view own conversations" ON public.chat_conversations
-  FOR SELECT USING (auth.uid() = user_id);
-
-CREATE POLICY "Users can create own conversations" ON public.chat_conversations
-  FOR INSERT WITH CHECK (auth.uid() = user_id);
-
--- Policies for chat_messages
-CREATE POLICY "Users can view messages in own conversations" ON public.chat_messages
-  FOR SELECT USING (
-    EXISTS (
-      SELECT 1 FROM public.chat_conversations
-      WHERE chat_conversations.id = chat_messages.conversation_id
-      AND chat_conversations.user_id = auth.uid()
-    )
-  );
-
-CREATE POLICY "Users can create messages in own conversations" ON public.chat_messages
-  FOR INSERT WITH CHECK (
-    EXISTS (
-      SELECT 1 FROM public.chat_conversations
-      WHERE chat_conversations.id = chat_messages.conversation_id
-      AND chat_conversations.user_id = auth.uid()
-    )
-  );
-
--- Function to automatically update updated_at timestamp
-CREATE OR REPLACE FUNCTION update_updated_at_column()
-RETURNS TRIGGER AS $$
+-- Create function to refresh the materialized view
+CREATE OR REPLACE FUNCTION refresh_component_stats()
+RETURNS void AS $$
 BEGIN
-  NEW.updated_at = TIMEZONE('utc', NOW());
-  RETURN NEW;
+  REFRESH MATERIALIZED VIEW component_stats;
 END;
 $$ LANGUAGE plpgsql;
 
--- Triggers for updated_at
-CREATE TRIGGER update_figbud_users_updated_at BEFORE UPDATE ON public.figbud_users
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+-- Create function for dynamic component stats calculation
+CREATE OR REPLACE FUNCTION get_component_stats()
+RETURNS TABLE(component_type VARCHAR(50), count BIGINT)
+AS $$
+BEGIN
+  RETURN QUERY
+  SELECT 
+    cc.component_type,
+    COUNT(*) as count
+  FROM components_created cc
+  GROUP BY cc.component_type
+  ORDER BY COUNT(*) DESC;
+END;
+$$ LANGUAGE plpgsql;
 
-CREATE TRIGGER update_component_templates_updated_at BEFORE UPDATE ON public.component_templates
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+-- Optional: Create a trigger to auto-refresh stats (or schedule this)
+-- You can call this function periodically or after inserts

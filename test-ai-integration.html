@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Test AI Integration</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .container {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    button {
+      background: #6366F1;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #5558E8;
+    }
+    #response {
+      margin-top: 20px;
+      padding: 10px;
+      background: #f0f0f0;
+      border-radius: 4px;
+      white-space: pre-wrap;
+    }
+    .error {
+      color: red;
+    }
+    .success {
+      color: green;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Test FigBud AI Integration</h1>
+    <p>Server: <span id="server-status">Checking...</span></p>
+    
+    <h2>Test Messages:</h2>
+    <button onclick="testMessage('Hello, can you help me design?')">Test Basic Message</button>
+    <button onclick="testMessage('Create a button component')">Test Button Creation</button>
+    <button onclick="testMessage('I need a login form')">Test Form Request</button>
+    <button onclick="testMessage('Make a dark themed card')">Test Card Creation</button>
+    
+    <h3>Response:</h3>
+    <div id="response">Click a button to test...</div>
+  </div>
+
+  <script>
+    // Check server status
+    fetch('http://localhost:3000/health')
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById('server-status').textContent = '✅ Running';
+        document.getElementById('server-status').className = 'success';
+      })
+      .catch(err => {
+        document.getElementById('server-status').textContent = '❌ Not running';
+        document.getElementById('server-status').className = 'error';
+      });
+
+    // Test AI message
+    async function testMessage(message) {
+      const responseDiv = document.getElementById('response');
+      responseDiv.textContent = 'Sending message to AI...';
+      
+      try {
+        const response = await fetch('http://localhost:3000/api/chat', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            message,
+            context: {
+              tool: 'figma_plugin',
+              test: true
+            }
+          })
+        });
+
+        const data = await response.json();
+        
+        if (!response.ok) {
+          throw new Error(data.message || 'API Error');
+        }
+
+        responseDiv.innerHTML = `
+<strong>Success!</strong>
+Response: ${data.response || data.message}
+Model: ${data.model || 'Unknown'}
+Provider: ${data.provider || 'Unknown'}
+
+Full Response:
+${JSON.stringify(data, null, 2)}
+        `;
+      } catch (error) {
+        responseDiv.innerHTML = `<span class="error">Error: ${error.message}</span>`;
+        console.error('Test error:', error);
+      }
+    }
+  </script>
+</body>
+</html>

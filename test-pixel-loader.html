@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pixel Frog Loader Test</title>
+    <style>
+        body {
+            background: #1E1E1E;
+            color: white;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        
+        .test-container {
+            background: #2D2D2D;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            text-align: center;
+        }
+        
+        h1 {
+            margin-bottom: 30px;
+            color: #4CAF50;
+        }
+        
+        .loader-preview {
+            margin: 20px 0;
+            padding: 20px;
+            background: #1E1E1E;
+            border-radius: 8px;
+            min-height: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .controls {
+            margin-top: 30px;
+        }
+        
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 0 5px;
+            font-size: 14px;
+        }
+        
+        button:hover {
+            background: #45A049;
+        }
+        
+        input[type="range"] {
+            width: 300px;
+            margin: 20px 0;
+        }
+        
+        .progress-label {
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+        
+        canvas {
+            image-rendering: -moz-crisp-edges;
+            image-rendering: -webkit-crisp-edges;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🐸 Pixel Frog Loader Test</h1>
+        
+        <div class="loader-preview">
+            <canvas id="frogCanvas" width="128" height="128"></canvas>
+        </div>
+        
+        <div class="progress-label">
+            Progress: <span id="progressValue">0</span>%
+        </div>
+        
+        <input type="range" id="progressSlider" min="0" max="100" value="0" />
+        
+        <div class="controls">
+            <button onclick="animateProgress()">Animate Loading</button>
+            <button onclick="resetProgress()">Reset</button>
+            <button onclick="toggleEffects()">Toggle Effects</button>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('frogCanvas');
+        const ctx = canvas.getContext('2d');
+        const progressSlider = document.getElementById('progressSlider');
+        const progressValue = document.getElementById('progressValue');
+        
+        let progress = 0;
+        let frameIndex = 0;
+        let showEffects = true;
+        let animating = false;
+        let particles = [];
+        
+        const colors = {
+            frogGreen: '#4CAF50',
+            frogDark: '#388E3C',
+            neonCyan: '#00FFFF',
+            neonPink: '#FF00FF',
+            matrixGreen: '#00FF00',
+            white: '#FFFFFF'
+        };
+        
+        // Simplified frog drawing
+        function drawFrog(x, y, squash = 0) {
+            const size = 4;
+            
+            // Body
+            ctx.fillStyle = colors.frogGreen;
+            ctx.fillRect(x - size*3, y - size*2 + squash, size*6, size*4 - squash*2);
+            
+            // Eyes
+            ctx.fillStyle = colors.white;
+            ctx.fillRect(x - size*2, y - size, size, size);
+            ctx.fillRect(x + size, y - size, size, size);
+            
+            // Pupils
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(x - size*2 + 1, y - size + 1, 2, 2);
+            ctx.fillRect(x + size + 1, y - size + 1, 2, 2);
+            
+            // Legs
+            ctx.fillStyle = colors.frogGreen;
+            ctx.fillRect(x - size*3, y + size*2 - squash, size*2, size);
+            ctx.fillRect(x + size, y + size*2 - squash, size*2, size);
+        }
+        
+        function drawLilyPad(x, y, glowing = false) {
+            ctx.fillStyle = glowing ? colors.neonCyan : colors.frogDark;
+            if (glowing) {
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = colors.neonCyan;
+            }
+            ctx.fillRect(x - 12, y, 24, 8);
+            ctx.shadowBlur = 0;
+        }
+        
+        function update() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw matrix rain for high progress
+            if (showEffects && progress > 50) {
+                ctx.fillStyle = colors.matrixGreen;
+                ctx.font = '8px monospace';
+                ctx.globalAlpha = 0.1;
+                
+                particles.forEach(p => {
+                    ctx.fillText(Math.random() > 0.5 ? '0' : '1', p.x, p.y);
+                });
+                
+                ctx.globalAlpha = 1;
+            }
+            
+            // Draw lily pads
+            const lilyPadCount = Math.floor(progress / 20);
+            for (let i = 0; i < lilyPadCount; i++) {
+                const x = (canvas.width / 6) * (i + 1);
+                const y = canvas.height - 20;
+                drawLilyPad(x, y, progress > 80);
+            }
+            
+            // Animate frog
+            frameIndex = (frameIndex + 1) % 60;
+            const bounce = Math.sin(frameIndex * 0.1) * 4;
+            const frogY = canvas.height / 2 + bounce;
+            
+            // Draw trailing effect
+            if (showEffects && frameIndex > 0) {
+                ctx.globalAlpha = 0.3;
+                ctx.fillStyle = colors.neonPink;
+                drawFrog(canvas.width / 2 - 2, frogY - 2, 0);
+                ctx.globalAlpha = 1;
+            }
+            
+            // Draw main frog
+            drawFrog(canvas.width / 2, frogY, bounce > 0 ? 2 : 0);
+            
+            // Update particles
+            if (showEffects && progress > 25) {
+                if (particles.length < 20 && Math.random() > 0.9) {
+                    particles.push({
+                        x: Math.random() * canvas.width,
+                        y: 0,
+                        vy: Math.random() * 2 + 1
+                    });
+                }
+                
+                particles = particles.filter(p => {
+                    p.y += p.vy;
+                    return p.y < canvas.height;
+                });
+            }
+            
+            requestAnimationFrame(update);
+        }
+        
+        function setProgress(value) {
+            progress = value;
+            progressValue.textContent = value;
+            progressSlider.value = value;
+        }
+        
+        function animateProgress() {
+            if (animating) return;
+            animating = true;
+            progress = 0;
+            
+            const interval = setInterval(() => {
+                progress += 1;
+                setProgress(progress);
+                
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    animating = false;
+                }
+            }, 50);
+        }
+        
+        function resetProgress() {
+            animating = false;
+            setProgress(0);
+            particles = [];
+        }
+        
+        function toggleEffects() {
+            showEffects = !showEffects;
+            if (!showEffects) particles = [];
+        }
+        
+        progressSlider.addEventListener('input', (e) => {
+            setProgress(parseInt(e.target.value));
+        });
+        
+        // Start animation loop
+        update();
+    </script>
+</body>
+</html>

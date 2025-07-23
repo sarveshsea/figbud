@@ -1,0 +1,53 @@
+/* FigBud Theme Variables - Glass Morphism Mode */
+:root {
+  /* Primary Colors - Glass Morphism */
+  --figbud-bg-primary: rgba(30, 30, 30, 0.75);
+  --figbud-bg-secondary: rgba(45, 45, 45, 0.6);
+  --figbud-bg-tertiary: rgba(58, 58, 58, 0.5);
+  --figbud-bg-hover: rgba(64, 64, 64, 0.4);
+  
+  /* Text Colors - Enhanced for glass background */
+  --figbud-text-primary: rgba(255, 255, 255, 0.95);
+  --figbud-text-secondary: rgba(255, 255, 255, 0.8);
+  --figbud-text-tertiary: rgba(255, 255, 255, 0.6);
+  --figbud-text-muted: rgba(255, 255, 255, 0.4);
+  
+  /* Border Colors - Subtle glass borders */
+  --figbud-border: rgba(255, 255, 255, 0.08);
+  --figbud-border-hover: rgba(255, 255, 255, 0.12);
+  --figbud-border-focus: rgba(33, 150, 243, 0.5);
+  
+  /* Interactive Colors - Semi-transparent */
+  --figbud-primary: rgba(33, 150, 243, 0.9);
+  --figbud-primary-hover: rgba(25, 118, 210, 0.9);
+  --figbud-success: rgba(76, 175, 80, 0.9);
+  --figbud-success-hover: rgba(69, 160, 73, 0.9);
+  --figbud-warning: rgba(255, 152, 0, 0.9);
+  --figbud-warning-hover: rgba(245, 124, 0, 0.9);
+  --figbud-danger: rgba(244, 67, 54, 0.9);
+  --figbud-danger-hover: rgba(211, 47, 47, 0.9);
+  
+  /* Component Specific - Glass surfaces */
+  --figbud-input-bg: rgba(255, 255, 255, 0.04);
+  --figbud-input-border: rgba(255, 255, 255, 0.1);
+  --figbud-input-hover: rgba(255, 255, 255, 0.06);
+  --figbud-card-bg: rgba(255, 255, 255, 0.03);
+  --figbud-preview-bg: rgba(0, 0, 0, 0.3);
+  
+  /* Shadows */
+  --figbud-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --figbud-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --figbud-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
+  
+  /* Spacing */
+  --figbud-spacing-xs: 4px;
+  --figbud-spacing-sm: 8px;
+  --figbud-spacing-md: 16px;
+  --figbud-spacing-lg: 24px;
+  --figbud-spacing-xl: 32px;
+  
+  /* Responsive Sizes */
+  --figbud-min-touch-target: 44px;
+  --figbud-sidebar-width: clamp(200px, 25vw, 300px);
+  --figbud-panel-width: clamp(280px, 30vw, 400px);
+}

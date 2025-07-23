@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test CORS for FigBud</title>
+</head>
+<body>
+    <h1>FigBud CORS Test</h1>
+    <button onclick="testHealth()">Test Health Endpoint</button>
+    <button onclick="testChat()">Test Chat Endpoint</button>
+    <pre id="output"></pre>
+
+    <script>
+        const output = document.getElementById('output');
+        
+        async function testHealth() {
+            output.textContent = 'Testing health endpoint...\n';
+            try {
+                const response = await fetch('http://localhost:3000/api/health');
+                const data = await response.json();
+                output.textContent += 'SUCCESS: ' + JSON.stringify(data, null, 2);
+            } catch (error) {
+                output.textContent += 'ERROR: ' + error.message;
+            }
+        }
+        
+        async function testChat() {
+            output.textContent = 'Testing chat endpoint...\n';
+            try {
+                const response = await fetch('http://localhost:3000/api/chat/message', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        message: 'Create a button',
+                        context: { test: true }
+                    })
+                });
+                const data = await response.json();
+                output.textContent += 'SUCCESS:\n' + JSON.stringify(data, null, 2);
+            } catch (error) {
+                output.textContent += 'ERROR: ' + error.message;
+            }
+        }
+    </script>
+</body>
+</html>

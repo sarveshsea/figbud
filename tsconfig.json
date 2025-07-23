@@ -1,11 +1,12 @@
 {
   "compilerOptions": {
-    "target": "ES2018",
-    "lib": ["ES2018", "DOM"],
-    "module": "CommonJS",
+    "target": "ES6",
+    "lib": ["ES6", "DOM"],
+    "module": "ESNext",
     "moduleResolution": "node",
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
+    "downlevelIteration": true,
     "strict": true,
     "strictNullChecks": true,
     "noImplicitAny": false,
@@ -22,8 +23,7 @@
     "typeRoots": ["./node_modules/@types", "./node_modules/@figma"]
   },
   "include": [
-    "src/**/*",
-    "server/**/*"
+    "src/**/*"
   ],
   "exclude": [
     "node_modules",

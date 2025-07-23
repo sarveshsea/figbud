@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test UI API Calls</title>
+</head>
+<body>
+    <h1>Test FigBud API from UI Context</h1>
+    <button onclick="testAPI()">Test API Call</button>
+    <div id="result"></div>
+
+    <script>
+        async function testAPI() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = 'Testing...';
+            
+            try {
+                const response = await fetch('http://localhost:3000/api/chat/message', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        message: 'Hello, can you help me create a button?',
+                        context: {
+                            timestamp: new Date().toISOString(),
+                            source: 'test-ui'
+                        }
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API error: ${response.status}`);
+                }
+
+                const data = await response.json();
+                console.log('API Response:', data);
+                
+                let aiResponse;
+                try {
+                    aiResponse = JSON.parse(data.text);
+                } catch (e) {
+                    aiResponse = { message: data.text };
+                }
+                
+                resultDiv.innerHTML = `
+                    <h2>Success!</h2>
+                    <p><strong>AI Message:</strong> ${aiResponse.message || data.text}</p>
+                    <p><strong>Component Type:</strong> ${aiResponse.componentType || 'N/A'}</p>
+                    <p><strong>Tutorials:</strong> ${data.metadata?.tutorials?.length || 0} found</p>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+            } catch (error) {
+                console.error('Error:', error);
+                resultDiv.innerHTML = `
+                    <h2>Error</h2>
+                    <p>${error.message}</p>
+                    <p>Make sure the server is running on port 3000</p>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>
