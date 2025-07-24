@@ -326,10 +326,25 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
           <button
             type="submit"
             disabled={loading || !input.trim()}
-            className="px-4 py-2 bg-figbud-green hover:bg-figbud-green-hover disabled:opacity-50 disabled:cursor-not-allowed text-figbud-bg font-medium rounded-lg transition-colors"
+            className="w-10 h-10 glass-surface hover:scale-105 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100 rounded-xl transition-all duration-200 flex items-center justify-center group"
+            style={{ 
+              background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(255, 255, 255, 0.2)'
+            }}
           >
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path d="M2 10L18 2L14 10L18 18L2 10Z" fill="currentColor"/>
+            {/* Modern minimal arrow icon */}
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="group-hover:scale-110 transition-transform duration-200">
+              <path 
+                d="M14 8L2 14L6 8L2 2L14 8Z" 
+                stroke="#FFFFFF" 
+                strokeWidth="1.5" 
+                strokeLinecap="round" 
+                strokeLinejoin="round"
+                fill="none"
+                opacity="0.9"
+              />
+              <circle cx="14" cy="8" r="1" fill="#FFFFFF" opacity="0.6"/>
             </svg>
           </button>
         </div>
