@@ -3,6 +3,7 @@ import { ChatMessage } from '../types';
 import { LoadingInsights } from './LoadingInsights';
 import { BackendStatus, BackendProcess } from './BackendStatus';
 import { MinimalProcessView } from './MinimalProcessView';
+import { TutorialGrid } from './TutorialGrid';
 import '../styles/backend-status.css';
 
 interface ChatWindowProps {
@@ -32,7 +33,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
 }) => {
   const [input, setInput] = useState('');
   const [isResizing, setIsResizing] = useState(false);
-  const [size, setSize] = useState({ width: 506, height: 600 }); // Increased width by 15%
+  const [size, setSize] = useState({ width: window.innerWidth || 600, height: window.innerHeight || 800 });
   const [loadingStartTime, setLoadingStartTime] = useState<number | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -96,9 +97,10 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
       ref={containerRef}
       className="flex flex-col h-full w-full rounded-window shadow-2xl animate-maximize glass-container"
       style={{ 
-        width: size.width, 
-        height: size.height,
-        background: 'transparent',
+        width: '100%', 
+        height: '100%',
+        maxWidth: size.width,
+        maxHeight: size.height,
         display: 'flex',
         flexDirection: 'column'
       }}
@@ -144,7 +146,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
       {/* Backend Status - Removed from here, will be shown below frog */}
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4" style={{ background: 'transparent' }}>
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.length === 0 && (
           <div className="text-center text-figbud-text-secondary py-8">
             <p className="text-lg mb-2">Welcome to FigBud! 👋</p>
@@ -190,6 +192,14 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
               {message.metadata?.teacherNote && (
                 <div className="mt-2 p-2 bg-figbud-accent/10 border border-figbud-accent/20 rounded-lg">
                   <p className="text-xs text-figbud-accent">💡 {message.metadata.teacherNote}</p>
+                </div>
+              )}
+              
+              {/* Show tutorials if available */}
+              {message.metadata?.tutorials && message.metadata.tutorials.length > 0 && (
+                <div className="mt-3">
+                  <p className="text-xs text-figbud-text-secondary mb-2">📹 Related tutorials:</p>
+                  <TutorialGrid tutorials={message.metadata.tutorials} />
                 </div>
               )}
               

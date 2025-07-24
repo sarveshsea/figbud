@@ -411,36 +411,49 @@ Or use: npm run server
   };
 
   return (
-    <div className="w-full h-full">
-      {isMinimized ? (
-        <MinimizedBud onClick={handleMaximize} />
-      ) : showComponentLibrary ? (
-        <ComponentLibraryView
-          onSelectComponent={handleSelectComponent}
-          onClose={() => setShowComponentLibrary(false)}
-        />
-      ) : selectedComponent ? (
-        <ComponentBuilder
-          component={selectedComponent}
-          onSave={handleCreateComponent}
-          onCancel={() => setSelectedComponent(null)}
-        />
-      ) : (
-        <ChatWindow
-          isMinimized={isMinimized}
-          messages={messages}
-          loading={loading}
-          backendProcesses={backendProcesses}
-          agents={agents}
-          showBackendStatus={showBackendStatus}
-          onSendMessage={handleSendMessage}
-          onMinimize={handleMinimize}
-          onResize={handleResize}
-          onShowComponentLibrary={() => setShowComponentLibrary(true)}
-        />
-      )}
+    <div className="w-full h-full" style={{ position: 'relative', width: '100vw', height: '100vh' }}>
+      {/* Gradient Background Layer - Pure decorative background */}
+      <div className="gradient-background">
+        <div className="wave-gradient wave-gradient-1"></div>
+        <div className="wave-gradient wave-gradient-2"></div>
+        <div className="wave-gradient wave-gradient-3"></div>
+        {/* Additional gradient layers for mesh effect */}
+        <div className="wave-gradient wave-gradient-4"></div>
+        <div className="wave-gradient wave-gradient-5"></div>
+      </div>
       
-      {/* Console Error View */}
+      {/* Main Content Layer - Above gradient */}
+      <div className="main-content-layer">
+        {isMinimized ? (
+          <MinimizedBud onClick={handleMaximize} />
+        ) : showComponentLibrary ? (
+          <ComponentLibraryView
+            onSelectComponent={handleSelectComponent}
+            onClose={() => setShowComponentLibrary(false)}
+          />
+        ) : selectedComponent ? (
+          <ComponentBuilder
+            component={selectedComponent}
+            onSave={handleCreateComponent}
+            onCancel={() => setSelectedComponent(null)}
+          />
+        ) : (
+          <ChatWindow
+            isMinimized={isMinimized}
+            messages={messages}
+            loading={loading}
+            backendProcesses={backendProcesses}
+            agents={agents}
+            showBackendStatus={showBackendStatus}
+            onSendMessage={handleSendMessage}
+            onMinimize={handleMinimize}
+            onResize={handleResize}
+            onShowComponentLibrary={() => setShowComponentLibrary(true)}
+          />
+        )}
+      </div>
+      
+      {/* Console Error View - Topmost layer */}
       <ConsoleErrorView 
         isVisible={showConsoleErrors}
         onClose={() => setShowConsoleErrors(false)}

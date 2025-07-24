@@ -23,7 +23,7 @@ const state: PluginState = {
   sandboxActive: false,
   currentUser: null,
   isMinimized: false,
-  windowSize: { width: 440, height: 600 },
+  windowSize: { width: 600, height: 800 },
 };
 
 // Component creation functions using Once UI renderer

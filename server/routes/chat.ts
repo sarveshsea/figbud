@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { EnhancedAIProvider } from '../services/enhanced-ai-provider';
 import { databaseService } from '../services/database';
 import { YouTubeService, Tutorial } from '../services/youtube-service';
+import { firebaseService } from '../services/firebase-service';
 import { APIKeyValidator } from '../utils/api-key-validation';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -93,8 +94,8 @@ router.post('/message', async (req, res) => {
     const aiStrategy = process.env.AI_STRATEGY as any || 'cost_optimized';
     const aiProvider = new EnhancedAIProvider(userApiKeys, aiStrategy);
     
-    // Process AI request and YouTube search in parallel
-    const [response, tutorials] = await Promise.all([
+    // Process AI request, YouTube search, and Firebase search in parallel
+    const [response, tutorials, firebaseResults] = await Promise.all([
       // AI processing
       aiProvider.processQuery(
         message,
@@ -161,6 +162,23 @@ router.post('/message', async (req, res) => {
           console.error('[Chat] Error searching YouTube tutorials:', error);
           return [];
         }
+      })(),
+      // Firebase search for additional resources (non-blocking)
+      (async () => {
+        try {
+          console.log('[Chat] Searching Firebase for design resources...');
+          const searchResults = await firebaseService.searchResources(message, 5);
+          
+          // Track search analytics
+          if (searchResults.length > 0) {
+            await firebaseService.trackSearch(message, searchResults.length);
+          }
+          
+          return searchResults;
+        } catch (error) {
+          console.error('[Chat] Error searching Firebase:', error);
+          return [];
+        }
       })()
     ]);
 
@@ -209,7 +227,9 @@ router.post('/message', async (req, res) => {
           thumbnailUrl: t.thumbnailUrl,
           skillLevel: 'intermediate' as const, // Default skill level
           timestamps: t.timestamps.slice(0, 5) // Limit timestamps to top 5
-        }))
+        })),
+        // Add Firebase search results if available
+        designResources: firebaseResults.length > 0 ? firebaseResults : undefined
       },
       conversationId
     };
