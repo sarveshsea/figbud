@@ -3,7 +3,7 @@ import { ChatMessage } from '../types';
 import { LoadingInsights } from './LoadingInsights';
 import { BackendStatus, BackendProcess } from './BackendStatus';
 import { MinimalProcessView } from './MinimalProcessView';
-import { TutorialGrid } from './TutorialGrid';
+import { TutorialCarousel } from './TutorialCarousel';
 import '../styles/backend-status.css';
 
 interface ChatWindowProps {
@@ -109,8 +109,21 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-figbud-border glass-header">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-figbud-green flex items-center justify-center">
-            <span className="text-figbud-bg font-semibold">F</span>
+          <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: 'rgba(255, 255, 255, 0.1)', backdropFilter: 'blur(10px)' }}>
+            {/* Minimal Pixel Frog */}
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              {/* Frog body - simplified pixel style */}
+              <rect x="6" y="8" width="8" height="8" fill="#4CAF50" opacity="0.9"/>
+              {/* Eyes */}
+              <rect x="7" y="6" width="2" height="3" fill="#4CAF50" opacity="0.9"/>
+              <rect x="11" y="6" width="2" height="3" fill="#4CAF50" opacity="0.9"/>
+              <rect x="7" y="7" width="2" height="2" fill="#FFFFFF"/>
+              <rect x="11" y="7" width="2" height="2" fill="#FFFFFF"/>
+              <rect x="8" y="8" width="1" height="1" fill="#000000"/>
+              <rect x="12" y="8" width="1" height="1" fill="#000000"/>
+              {/* Minimal features */}
+              <rect x="8" y="12" width="4" height="1" fill="#388E3C" opacity="0.7"/>
+            </svg>
           </div>
           <h2 className="text-figbud-text font-semibold">FigBud</h2>
         </div>
@@ -199,7 +212,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
               {message.metadata?.tutorials && message.metadata.tutorials.length > 0 && (
                 <div className="mt-3">
                   <p className="text-xs text-figbud-text-secondary mb-2">📹 Related tutorials:</p>
-                  <TutorialGrid tutorials={message.metadata.tutorials} />
+                  <TutorialCarousel tutorials={message.metadata.tutorials} />
                 </div>
               )}
               
@@ -274,7 +287,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
           title="Add element"
         >
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-            <path d="M10 4V16M4 10H16" stroke="#666666" strokeWidth="2" strokeLinecap="round"/>
+            <path d="M10 4V16M4 10H16" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round" strokeOpacity="0.8"/>
           </svg>
         </button>
         <button
@@ -283,9 +296,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
           title="Get help"
         >
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-            <circle cx="10" cy="10" r="8" stroke="#666666" strokeWidth="2"/>
-            <path d="M8 8C8 6.89543 8.89543 6 10 6C11.1046 6 12 6.89543 12 8C12 9.10457 11.1046 10 10 10V12" stroke="#666666" strokeWidth="2" strokeLinecap="round"/>
-            <circle cx="10" cy="15" r="0.5" fill="#666666"/>
+            <circle cx="10" cy="10" r="8" stroke="#FFFFFF" strokeWidth="2" strokeOpacity="0.8"/>
+            <path d="M8 8C8 6.89543 8.89543 6 10 6C11.1046 6 12 6.89543 12 8C12 9.10457 11.1046 10 10 10V12" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round" strokeOpacity="0.8"/>
+            <circle cx="10" cy="15" r="0.5" fill="#FFFFFF" fillOpacity="0.8"/>
           </svg>
         </button>
         <button
@@ -294,7 +307,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
           title="AI suggestions"
         >
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-            <path d="M10 2L12 8H18L13 11L15 17L10 14L5 17L7 11L2 8H8L10 2Z" stroke="#666666" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M10 2L12 8H18L13 11L15 17L10 14L5 17L7 11L2 8H8L10 2Z" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" strokeOpacity="0.8"/>
           </svg>
         </button>
       </div>
